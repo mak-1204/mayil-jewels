@@ -634,7 +634,6 @@ function ProductsView({ products, categories, refetchProducts }: { products: any
             )}
           </tbody>
         </table>
-        </div>
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -822,7 +821,6 @@ function InquiriesView({ orders, fetchOrders }: { orders: any[]; fetchOrders: ()
             )}
           </tbody>
         </table>
-        </div>
       </div>
     </div>
   );
