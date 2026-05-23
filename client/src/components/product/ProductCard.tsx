@@ -72,7 +72,8 @@ export default function ProductCard({ product, compact }: Props) {
         </div>
         <div className={`pt-3 ${compact ? "space-y-0.5" : "space-y-1"}`}>
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
-            {product.metal} · {product.purity}
+            {product.style}
+            {product.finish ? ` · ${product.finish}` : ""}
           </p>
           <h3
             className={`font-medium leading-snug group-hover:text-[var(--brand)] transition-colors ${

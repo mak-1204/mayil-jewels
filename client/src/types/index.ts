@@ -6,6 +6,13 @@ export type Category = {
   image: string;
 };
 
+export type ProductStyle =
+  | "Antique"
+  | "Imitation"
+  | "Temple"
+  | "Kundan"
+  | "Oxidised";
+
 export type Product = {
   id: string;
   name: string;
@@ -16,8 +23,8 @@ export type Product = {
   weight?: number;
   categoryId: string;
   categorySlug: string;
-  metal: "Gold" | "Diamond" | "Platinum" | "Silver";
-  purity?: string;
+  style: ProductStyle;
+  finish?: string;
   featured: boolean;
   trending: boolean;
   isNew: boolean;

@@ -6,27 +6,23 @@ import { Link } from "wouter";
 const slides = [
   {
     title: "New Arrivals",
-    subtitle: "500+ new designs dropping daily",
+    subtitle: "Fresh antique & imitation designs every week",
     cta: "Shop Now",
     href: "/collections?new=true",
     image:
       "https://images.unsplash.com/photo-1519741497674-611481863552?w=1400&h=600&fit=crop",
   },
   {
-    title: "Wedding Collection",
-    subtitle: "Bridal sets crafted for your big day",
-    cta: "Explore Wedding",
-    href: "/collections?world=wedding",
-    image:
-      "https://images.unsplash.com/photo-1599459183761-45c31a2b2b0e?w=1400&h=600&fit=crop",
+    title: "Antique Collection",
+    subtitle: "Temple-inspired vintage finishes",
+    cta: "Explore Antique",
+    href: "/collections?style=Antique",
   },
   {
-    title: "Diamond Styling 101",
-    subtitle: "Trendsetting pieces for every occasion",
-    cta: "Shop Diamonds",
-    href: "/collections?metal=Diamond",
-    image:
-      "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=1400&h=600&fit=crop",
+    title: "Imitation Bridal",
+    subtitle: "Stunning sets for your special day",
+    cta: "Shop Bridal",
+    href: "/collections?world=wedding",
   },
 ];
 
@@ -56,7 +52,7 @@ export default function HeroCarousel() {
       <div className="absolute inset-0 flex items-center">
         <div className="container text-white max-w-xl">
           <p className="text-xs uppercase tracking-[0.3em] mb-3 text-white/80">
-            Mayil Collections
+            Antique & Imitation Jewellery
           </p>
           <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-light mb-4">
             {slide.title}

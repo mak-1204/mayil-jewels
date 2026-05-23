@@ -476,8 +476,8 @@ function ProductsView({ products, categories, refetchProducts }: { products: any
     price: "",
     weight: "",
     categoryId: "",
-    metal: "Gold",
-    purity: "22KT",
+    style: "Imitation",
+    finish: "Gold-tone",
     gender: "Women",
     featured: false,
     trending: false,
@@ -493,8 +493,8 @@ function ProductsView({ products, categories, refetchProducts }: { products: any
       price: "",
       weight: "",
       categoryId: categories[0]?.id || "",
-      metal: "Gold",
-      purity: "22KT",
+      style: "Imitation",
+      finish: "Gold-tone",
       gender: "Women",
       featured: false,
       trending: false,
@@ -512,8 +512,8 @@ function ProductsView({ products, categories, refetchProducts }: { products: any
       price: String(product.price),
       weight: product.weight ? String(product.weight) : "",
       categoryId: product.categoryId || categories[0]?.id || "",
-      metal: product.metal || "Gold",
-      purity: product.purity || "22KT",
+      style: product.style || product.metal || "Imitation",
+      finish: product.finish || product.purity || "Gold-tone",
       gender: product.gender || "Women",
       featured: Boolean(product.featured),
       trending: Boolean(product.trending),
@@ -538,8 +538,8 @@ function ProductsView({ products, categories, refetchProducts }: { products: any
       weight: formData.weight ? Number(formData.weight) : undefined,
       categoryId: formData.categoryId,
       categorySlug,
-      metal: formData.metal as any,
-      purity: formData.purity,
+      style: formData.style as any,
+      finish: formData.finish,
       gender: formData.gender as any,
       featured: formData.featured,
       trending: formData.trending,
@@ -596,7 +596,7 @@ function ProductsView({ products, categories, refetchProducts }: { products: any
             <tr>
               <th className="px-6 py-4 text-left font-semibold">Name</th>
               <th className="px-6 py-4 text-left font-semibold">Category</th>
-              <th className="px-6 py-4 text-left font-semibold">Metal</th>
+              <th className="px-6 py-4 text-left font-semibold">Style</th>
               <th className="px-6 py-4 text-left font-semibold">Price</th>
               <th className="px-6 py-4 text-left font-semibold">Featured</th>
               <th className="px-6 py-4 text-left font-semibold">Actions</th>
@@ -609,7 +609,7 @@ function ProductsView({ products, categories, refetchProducts }: { products: any
                 <tr key={product.id} className="border-b border-border/50 hover:bg-secondary/20 transition-colors">
                   <td className="px-6 py-4 font-medium">{product.name}</td>
                   <td className="px-6 py-4 text-muted-foreground">{categoryName}</td>
-                  <td className="px-6 py-4 text-muted-foreground">{product.metal || "Gold"}</td>
+                  <td className="px-6 py-4 text-muted-foreground">{product.style || product.metal || "Imitation"}</td>
                   <td className="px-6 py-4 font-medium">{formatINR(Number(product.price))}</td>
                   <td className="px-6 py-4">
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${product.featured ? "bg-accent/20 text-accent" : "bg-muted text-muted-foreground"}`}>
@@ -672,20 +672,21 @@ function ProductsView({ products, categories, refetchProducts }: { products: any
                 </select>
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-medium uppercase text-muted-foreground">Metal Type</label>
-                <select value={formData.metal} onChange={(e) => setFormData({ ...formData, metal: e.target.value })} className="w-full px-3 py-2 border rounded-sm focus:outline-none focus:ring-1 focus:ring-accent bg-white text-foreground">
-                  <option value="Gold">Gold</option>
-                  <option value="Diamond">Diamond</option>
-                  <option value="Platinum">Platinum</option>
-                  <option value="Silver">Silver</option>
+                <label className="text-xs font-medium uppercase text-muted-foreground">Style</label>
+                <select value={formData.style} onChange={(e) => setFormData({ ...formData, style: e.target.value })} className="w-full px-3 py-2 border rounded-sm focus:outline-none focus:ring-1 focus:ring-accent bg-white text-foreground">
+                  <option value="Antique">Antique</option>
+                  <option value="Imitation">Imitation</option>
+                  <option value="Temple">Temple</option>
+                  <option value="Kundan">Kundan</option>
+                  <option value="Oxidised">Oxidised</option>
                 </select>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-xs font-medium uppercase text-muted-foreground">Purity</label>
-                <input type="text" value={formData.purity} onChange={(e) => setFormData({ ...formData, purity: e.target.value })} className="w-full px-3 py-2 border rounded-sm focus:outline-none focus:ring-1 focus:ring-accent bg-white text-foreground" placeholder="22KT" />
+                <label className="text-xs font-medium uppercase text-muted-foreground">Finish</label>
+                <input type="text" value={formData.finish} onChange={(e) => setFormData({ ...formData, finish: e.target.value })} className="w-full px-3 py-2 border rounded-sm focus:outline-none focus:ring-1 focus:ring-accent bg-white text-foreground" placeholder="e.g. Antique gold-tone" />
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-medium uppercase text-muted-foreground">Gender</label>

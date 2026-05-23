@@ -27,7 +27,8 @@ export default function Collections() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const params = useQueryParams();
   const category = params.get("category") ?? undefined;
-  const metal = params.get("metal") ?? undefined;
+  const style =
+    params.get("style") ?? params.get("metal") ?? undefined;
   const world = params.get("world") ?? undefined;
   const occasion = params.get("occasion") ?? undefined;
   const gender = params.get("gender") ?? undefined;
@@ -38,20 +39,29 @@ export default function Collections() {
   const loading = productsLoading || categoriesLoading;
 
   const products = filterProducts(
-    { category, metal, world, occasion, gender, query, trending: trending || undefined, isNew: isNew || undefined },
+    {
+      category,
+      style,
+      world,
+      occasion,
+      gender,
+      query,
+      trending: trending || undefined,
+      isNew: isNew || undefined,
+    },
     rawProducts
   );
 
   const title = useMemo(() => {
     if (query) return `Results for "${query}"`;
-    if (metal) return `${metal} Jewellery`;
+    if (style) return `${style} Collection`;
     if (world === "wedding") return "Wedding Collection";
     if (isNew) return "New Arrivals";
     if (trending) return "Trending Now";
     if (category) return categories.find((c) => c.slug === category)?.name ?? "Collections";
     if (gender) return `${gender}'s Jewellery`;
     return "All Jewellery";
-  }, [query, metal, world, isNew, trending, category, gender, categories]);
+  }, [query, style, world, isNew, trending, category, gender, categories]);
 
   if (loading) {
     return (
@@ -109,21 +119,24 @@ export default function Collections() {
       </div>
 
       <div>
-        <p className="text-xs font-medium uppercase text-muted-foreground mb-2">Metal</p>
+        <p className="text-xs font-medium uppercase text-muted-foreground mb-2">Style</p>
         <Select
-          value={metal ?? "all"}
+          value={style ?? "all"}
           onValueChange={(v) => {
-            window.location.href = v === "all" ? "/collections" : `/collections?metal=${v}`;
+            window.location.href =
+              v === "all" ? "/collections" : `/collections?style=${encodeURIComponent(v)}`;
           }}
         >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="All metals" />
+            <SelectValue placeholder="All styles" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All</SelectItem>
-            <SelectItem value="Gold">Gold</SelectItem>
-            <SelectItem value="Diamond">Diamond</SelectItem>
-            <SelectItem value="Platinum">Platinum</SelectItem>
+            <SelectItem value="Antique">Antique</SelectItem>
+            <SelectItem value="Imitation">Imitation</SelectItem>
+            <SelectItem value="Temple">Temple</SelectItem>
+            <SelectItem value="Kundan">Kundan</SelectItem>
+            <SelectItem value="Oxidised">Oxidised</SelectItem>
           </SelectContent>
         </Select>
       </div>

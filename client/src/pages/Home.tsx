@@ -44,10 +44,10 @@ export default function Home() {
       />
       <AssuranceSection />
       <ProductRow
-        title="Styling 101"
-        subtitle="Trendsetting jewellery for every occasion"
+        title="Editor's Picks"
+        subtitle="Handpicked antique & imitation favourites"
         products={featured}
-        viewAllHref="/collections?metal=Diamond"
+        viewAllHref="/collections?style=Imitation"
       />
       <GiftByGender />
       <ExperienceCTA />

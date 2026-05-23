@@ -9,8 +9,8 @@ export default function SiteFooter() {
         <div className="col-span-2 md:col-span-1">
           <p className="font-serif text-2xl tracking-[0.2em] text-white mb-4">MAYIL JEWELS</p>
           <p className="text-sm text-white/60 leading-relaxed">
-            Your premier destination for exquisite handcrafted covering jewellery — designed
-            with premium micro-plating, anti-tarnish protection, and timeless style.
+            Your destination for antique and imitation jewellery — handcrafted fashion
+            pieces with premium plating, anti-tarnish care, and timeless Indian style.
           </p>
         </div>
         <div>
@@ -53,10 +53,10 @@ export default function SiteFooter() {
         <div>
           <h4 className="text-sm font-semibold uppercase tracking-wider mb-4">Assurance</h4>
           <ul className="space-y-2 text-sm text-white/70">
-            <li>Premium Micro-Plated Gold</li>
+            <li>Antique & Imitation Specialists</li>
+            <li>Premium Fashion Plating</li>
             <li>Anti-Tarnish Protective Layer</li>
             <li>Hypoallergenic & Skin-Friendly</li>
-            <li>Elegant Handcrafted Detail</li>
           </ul>
         </div>
       </div>

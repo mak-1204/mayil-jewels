@@ -3,23 +3,23 @@ import { Shield, Sparkles, Heart, MessageSquare } from "lucide-react";
 const items = [
   {
     icon: Sparkles,
-    title: "Premium Micro-Plating",
-    desc: "Exquisite 24ct gold plating & micro-plating",
+    title: "Antique & Imitation",
+    desc: "Curated fashion jewellery — temple, kundan & daily styles",
   },
   {
     icon: Heart,
     title: "Skin-Friendly",
-    desc: "Hypoallergenic, nickel-free premium materials",
+    desc: "Hypoallergenic materials for comfortable all-day wear",
   },
   {
     icon: Shield,
     title: "Anti-Tarnish Coating",
-    desc: "Special protective layer for long-lasting shine",
+    desc: "Protective finish to keep your pieces looking fresh",
   },
   {
     icon: MessageSquare,
     title: "WhatsApp Ordering",
-    desc: "Easy direct purchase & personal customization",
+    desc: "Easy orders, custom sets & personal styling help",
   },
 ];
 

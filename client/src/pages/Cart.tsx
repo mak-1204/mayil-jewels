@@ -136,7 +136,8 @@ export default function Cart() {
                     {product.name}
                   </Link>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {product.metal} · {product.purity}
+                    {product.style}
+                    {product.finish ? ` · ${product.finish}` : ""}
                   </p>
                   <p className="font-semibold text-[var(--brand)] mt-2">
                     {formatINR(product.price)}

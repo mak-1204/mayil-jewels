@@ -24,6 +24,7 @@ import {
 import { products as initialProducts } from "@/data/products";
 import { categories as initialCategories } from "@/data/categories";
 import type { Product, Category } from "@/types";
+import { normalizeProduct } from "@/lib/normalizeProduct";
 
 // Firebase Config from Vite Env or User Provided Defaults
 const firebaseConfig = {
@@ -78,7 +79,8 @@ function getLocalProducts(): Product[] {
     return initialProducts;
   }
   try {
-    return JSON.parse(data);
+    const parsed = JSON.parse(data) as Record<string, unknown>[];
+    return parsed.map((p) => normalizeProduct(p));
   } catch {
     return initialProducts;
   }
@@ -145,7 +147,7 @@ export async function getFirebaseProducts(): Promise<Product[]> {
       const querySnapshot = await getDocs(collection(db, "products"));
       const list: Product[] = [];
       querySnapshot.forEach((d) => {
-        list.push({ ...d.data(), id: d.id } as Product);
+        list.push(normalizeProduct({ ...d.data(), id: d.id }));
       });
       return list;
     } catch (error) {

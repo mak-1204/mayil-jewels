@@ -102,7 +102,8 @@ export default function ProductDetail() {
           <div className="space-y-6">
             <div>
               <p className="text-xs uppercase tracking-widest text-[var(--brand)] mb-2">
-                {product.metal} · {product.purity}
+                {product.style}
+                {product.finish ? ` · ${product.finish}` : ""}
               </p>
               <h1 className="font-serif text-2xl md:text-3xl leading-tight mb-4">
                 {product.name}
@@ -119,7 +120,7 @@ export default function ProductDetail() {
               </div>
               {product.weight && (
                 <p className="text-sm text-muted-foreground mt-2">
-                  Gross weight: {product.weight}g (approx.)
+                  Piece weight: {product.weight}g (approx., fashion jewellery)
                 </p>
               )}
             </div>
@@ -193,9 +194,9 @@ export default function ProductDetail() {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t">
               {[
-                { icon: Sparkles, text: "Premium micro-plated gold" },
+                { icon: Sparkles, text: "Antique / imitation finish" },
                 { icon: Shield, text: "Anti-tarnish protective layer" },
-                { icon: Truck, text: "Express delivery support" },
+                { icon: Truck, text: "Fashion jewellery — not precious metal" },
               ].map(({ icon: Icon, text }) => (
                 <div key={text} className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Icon className="w-4 h-4 text-[var(--brand)] shrink-0" />

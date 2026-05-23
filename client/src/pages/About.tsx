@@ -6,17 +6,15 @@ import { Sparkles, Award, Heart, Zap } from "lucide-react";
 export default function About() {
   return (
     <PageLayout>
-      {/* Hero Section */}
       <section className="py-16 md:py-24 bg-secondary/10 border-b border-border/50">
         <div className="container">
           <h1 className="text-5xl md:text-6xl font-light mb-6">About Mayil Jewels</h1>
           <p className="text-xl text-muted-foreground max-w-2xl">
-            Crafting timeless elegance through traditional artistry and modern design
+            Antique and imitation jewellery for weddings, festivals, and everyday elegance
           </p>
         </div>
       </section>
 
-      {/* Brand Story */}
       <section className="py-16 md:py-24">
         <div className="container">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
@@ -24,21 +22,23 @@ export default function About() {
               <h2 className="text-4xl md:text-5xl font-light">Our Story</h2>
               <div className="space-y-4 text-lg text-muted-foreground leading-relaxed">
                 <p>
-                  Mayil Jewels was founded with a vision to celebrate the beauty and elegance of traditional Indian jewelry. For over 15 years, we have been crafting exquisite pieces that blend timeless traditions with contemporary design.
+                  Mayil Jewels celebrates the beauty of Indian fashion jewellery — antique temple
+                  looks, kundan-style sets, and lightweight imitation pieces for every occasion.
                 </p>
                 <p>
-                  Every piece in our collection is a testament to our commitment to quality, authenticity, and artistic excellence. Our master craftsmen bring decades of experience to create jewelry that tells a story.
+                  We specialise in handcrafted fashion jewellery with premium plating and
+                  anti-tarnish care. Our designs are made for stunning style, not sold as precious
+                  metal or certified diamond jewellery.
                 </p>
                 <p>
-                  We believe that jewelry is more than just an accessory—it's an expression of identity, culture, and personal style. That's why we pour our hearts into every creation.
+                  Whether you are dressing for a wedding, a festival, or daily wear, we help you
+                  find pieces that express your personality without the weight or cost of fine gold.
                 </p>
               </div>
               <Link href="/contact">
-                <a>
-                  <Button size="lg" className="luxury-button">
-                    Get in Touch
-                  </Button>
-                </a>
+                <Button size="lg" className="luxury-button">
+                  Get in Touch
+                </Button>
               </Link>
             </div>
             <div className="relative h-96 bg-secondary/30 rounded-2xl flex items-center justify-center">
@@ -48,33 +48,31 @@ export default function About() {
         </div>
       </section>
 
-      {/* Values Section */}
       <section className="py-16 md:py-24 bg-secondary/10">
         <div className="container">
-          <h2 className="text-4xl md:text-5xl font-light text-center mb-12">
-            Our Values
-          </h2>
+          <h2 className="text-4xl md:text-5xl font-light text-center mb-12">Our Values</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
               {
                 icon: Sparkles,
-                title: "Authenticity",
-                description: "Every piece is genuine, certified, and crafted with integrity",
+                title: "Honest Offering",
+                description:
+                  "Clear about antique & imitation — fashion jewellery with beautiful finishes",
               },
               {
                 icon: Award,
-                title: "Excellence",
-                description: "We maintain the highest standards of craftsmanship and quality",
+                title: "Craftsmanship",
+                description: "Attention to detail in every jhumka, bangle, and bridal set",
               },
               {
                 icon: Heart,
                 title: "Passion",
-                description: "Our artisans pour their heart into every creation",
+                description: "Designs inspired by temple, heritage, and modern Indian style",
               },
               {
                 icon: Zap,
-                title: "Innovation",
-                description: "Blending traditional techniques with modern design sensibilities",
+                title: "Accessibility",
+                description: "Statement looks for weddings and daily wear at approachable prices",
               },
             ].map((value, index) => {
               const Icon = value.icon;
@@ -82,9 +80,7 @@ export default function About() {
                 <div key={index} className="luxury-card p-6 text-center space-y-4">
                   <Icon className="w-8 h-8 text-accent mx-auto" />
                   <h3 className="text-xl font-semibold">{value.title}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {value.description}
-                  </p>
+                  <p className="text-sm text-muted-foreground">{value.description}</p>
                 </div>
               );
             })}
@@ -92,57 +88,17 @@ export default function About() {
         </div>
       </section>
 
-      {/* Team Section */}
-      <section className="py-16 md:py-24">
-        <div className="container">
-          <h2 className="text-4xl md:text-5xl font-light text-center mb-12">
-            Meet Our Team
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                name: "Priya Sharma",
-                role: "Founder & Lead Designer",
-                bio: "With 20+ years of experience in jewelry design, Priya leads our creative vision",
-              },
-              {
-                name: "Rajesh Kumar",
-                role: "Master Craftsman",
-                bio: "A third-generation artisan with unparalleled expertise in traditional techniques",
-              },
-              {
-                name: "Anjali Patel",
-                role: "Quality Assurance",
-                bio: "Ensures every piece meets our exacting standards of excellence",
-              },
-            ].map((member, index) => (
-              <div key={index} className="luxury-card p-8 text-center space-y-4">
-                <div className="w-24 h-24 bg-secondary/30 rounded-full mx-auto flex items-center justify-center text-3xl">
-                  👤
-                </div>
-                <h3 className="text-xl font-semibold">{member.name}</h3>
-                <p className="text-sm font-medium text-accent">{member.role}</p>
-                <p className="text-sm text-muted-foreground">{member.bio}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
       <section className="py-16 md:py-24 bg-secondary/10 border-t border-b border-border/50">
         <div className="container">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
             {[
-              { number: "15+", label: "Years of Excellence" },
-              { number: "500+", label: "Unique Designs" },
+              { number: "500+", label: "Fashion Designs" },
               { number: "10K+", label: "Happy Customers" },
-              { number: "100%", label: "Certified Authentic" },
+              { number: "8+", label: "Categories" },
+              { number: "100%", label: "Style Satisfaction" },
             ].map((stat, index) => (
               <div key={index} className="space-y-2">
-                <p className="text-4xl md:text-5xl font-light text-accent">
-                  {stat.number}
-                </p>
+                <p className="text-4xl md:text-5xl font-light text-accent">{stat.number}</p>
                 <p className="text-muted-foreground">{stat.label}</p>
               </div>
             ))}
@@ -150,27 +106,19 @@ export default function About() {
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="py-16 md:py-24">
-        <div className="container">
-          <div className="max-w-2xl mx-auto text-center space-y-6">
-            <h2 className="text-4xl md:text-5xl font-light">
-              Discover Your Perfect Piece
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Explore our collections and find jewelry that resonates with your style and story
-            </p>
-            <Link href="/collections">
-              <a>
-                <Button size="lg" className="luxury-button">
-                  Shop Now
-                </Button>
-              </a>
-            </Link>
-          </div>
+        <div className="container max-w-2xl mx-auto text-center space-y-6">
+          <h2 className="text-4xl md:text-5xl font-light">Discover Your Perfect Piece</h2>
+          <p className="text-lg text-muted-foreground">
+            Explore antique and imitation collections for every mood and moment
+          </p>
+          <Link href="/collections">
+            <Button size="lg" className="luxury-button">
+              Shop Now
+            </Button>
+          </Link>
         </div>
       </section>
     </PageLayout>
   );
 }
-

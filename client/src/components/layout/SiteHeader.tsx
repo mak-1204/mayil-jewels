@@ -24,11 +24,11 @@ import StylingAssistantDialog from "./StylingAssistantDialog";
 
 const navLinks = [
   { label: "All Jewellery", href: "/collections" },
-  { label: "Gold", href: "/collections?metal=Gold" },
-  { label: "Diamond", href: "/collections?metal=Diamond" },
+  { label: "Antique", href: "/collections?style=Antique" },
+  { label: "Imitation", href: "/collections?style=Imitation" },
   { label: "Wedding", href: "/collections?world=wedding" },
   { label: "New Arrivals", href: "/collections?new=true" },
-  { label: "Stores", href: "/stores" },
+  { label: "Contact", href: "/contact" },
 ];
 
 export default function SiteHeader() {
@@ -66,7 +66,7 @@ export default function SiteHeader() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="search"
-                placeholder="Search gold necklace, rings, diamonds..."
+                placeholder="Search antique necklace, jhumkas, bangles..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="w-full h-10 pl-10 pr-24 rounded-sm border border-border bg-secondary/30 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand)]/30"
