@@ -98,7 +98,30 @@ export default function AdminDashboard() {
   return (
     <PageLayout>
       <div className="flex-1 flex min-h-[calc(100vh-200px)]">
-        {/* Sidebar */}
+        {/* Mobile tab bar */}
+        <div className="md:hidden flex border-b overflow-x-auto">
+          {[
+            { tab: "dashboard", label: "Dashboard", icon: BarChart3 },
+            { tab: "products", label: "Products", icon: Package },
+            { tab: "categories", label: "Categories", icon: LayoutGrid },
+            { tab: "inquiries", label: "Inquiries", icon: MessageSquare },
+          ].map(({ tab, label, icon: Icon }) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab as AdminTab)}
+              className={`flex flex-col items-center gap-1 px-4 py-3 text-xs shrink-0 border-b-2 transition-colors ${
+                activeTab === tab
+                  ? "border-[var(--brand)] text-[var(--brand)]"
+                  : "border-transparent text-muted-foreground"
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Desktop Sidebar */}
         <aside className="hidden md:flex w-64 bg-secondary/30 border-r border-border/50 flex-col">
           <div className="p-6 space-y-2">
             <h2 className="text-xl font-light">Admin Panel</h2>
@@ -611,6 +634,7 @@ function ProductsView({ products, categories, refetchProducts }: { products: any
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -798,6 +822,7 @@ function InquiriesView({ orders, fetchOrders }: { orders: any[]; fetchOrders: ()
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );
