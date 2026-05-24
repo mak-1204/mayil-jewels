@@ -7,8 +7,9 @@ import { Link } from "wouter";
 import { toast } from "sonner";
 import { WHATSAPP_NUMBER } from "@/const";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { addFirebaseOrder } from "@/lib/firebase";
+import { addFirebaseOrder, validateFirebaseCoupon } from "@/lib/firebase";
 import { useState, useEffect } from "react";
+import { useDeliverySettings } from "@/hooks/useDeliverySettings";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +28,62 @@ export default function Cart() {
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [isPending, setIsPending] = useState(false);
+
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [couponError, setCouponError] = useState("");
+  const [isValidating, setIsValidating] = useState(false);
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setIsValidating(true);
+    setCouponError("");
+    try {
+      const coupon = await validateFirebaseCoupon(couponCode);
+      if (coupon) {
+        setAppliedCoupon(coupon);
+        setCouponError("");
+        toast.success(`Coupon "${coupon.id}" applied successfully!`);
+      } else {
+        setCouponError("Invalid or inactive coupon code.");
+        setAppliedCoupon(null);
+      }
+    } catch (err: any) {
+      console.error(err);
+      setCouponError("Failed to validate coupon.");
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    setCouponError("");
+    toast.info("Coupon removed.");
+  };
+
+  const discountAmount = appliedCoupon
+    ? appliedCoupon.discountType === "percentage"
+      ? Math.round((cartTotal * appliedCoupon.discountValue) / 100)
+      : appliedCoupon.discountValue
+    : 0;
+
+  const discountedTotal = Math.max(0, cartTotal - discountAmount);
+
+  const { settings: deliverySettings } = useDeliverySettings();
+  const totalItemsCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+
+  const deliveryCharge = (() => {
+    if (!deliverySettings || totalItemsCount === 0) return 0;
+    const { baseCharge, additionalItemCharge, freeThreshold } = deliverySettings;
+    if (freeThreshold > 0 && cartTotal >= freeThreshold) {
+      return 0;
+    }
+    return baseCharge + (totalItemsCount - 1) * additionalItemCharge;
+  })();
+
+  const grandTotal = discountedTotal + deliveryCharge;
 
   useEffect(() => {
     if (user) {
@@ -54,16 +111,28 @@ export default function Cart() {
           price: product.price,
           name: product.name,
         })),
-        totalAmount: cartTotal,
-      });
+        totalAmount: grandTotal,
+        couponCode: appliedCoupon?.id || undefined,
+        discountAmount: appliedCoupon ? discountAmount : undefined,
+        deliveryCharge: deliveryCharge,
+      } as any);
 
       const itemsList = cartItems
         .map(
           ({ product, quantity }, i) =>
-            `${i + 1}. *${product.name}* (Qty: ${quantity}) - ${formatINR(product.price * quantity)}`
+            `${i + 1}. *${product.name}* (Qty: ${quantity}) - ${formatINR(product.price * quantity)}\n   Link: ${window.location.origin}/product/${product.id}`
         )
-        .join("\n");
-      const message = `Hello Mayil Jewels! I would like to place an order for the following items:\n\n${itemsList}\n\n*Total Amount:* ${formatINR(cartTotal)}\n\n*My Details:*\nName: ${customerName}\nPhone: ${customerPhone}${customerEmail ? `\nEmail: ${customerEmail}` : ""}\n\nPlease let me know the payment and delivery details.`;
+        .join("\n\n");
+
+      const discountStr = appliedCoupon
+        ? `\n*Coupon Applied:* ${appliedCoupon.id} (-${appliedCoupon.discountType === "percentage" ? `${appliedCoupon.discountValue}%` : formatINR(appliedCoupon.discountValue)})\n*Discount Amount:* -${formatINR(discountAmount)}`
+        : "";
+
+      const deliveryStr = deliveryCharge > 0
+        ? `\n*Delivery:* ${formatINR(deliveryCharge)}`
+        : `\n*Delivery:* Complimentary`;
+
+      const message = `Hello Mayil Jewels! I would like to place an order for the following items:\n\n${itemsList}\n\n*Subtotal:* ${formatINR(cartTotal)}${discountStr}${deliveryStr}\n*Total Amount:* ${formatINR(grandTotal)}\n\n*My Details:*\nName: ${customerName}\nPhone: ${customerPhone}${customerEmail ? `\nEmail: ${customerEmail}` : ""}\n\nPlease let me know the payment and delivery details.`;
       const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
       
       setCheckoutOpen(false);
@@ -74,14 +143,22 @@ export default function Cart() {
       console.error("Failed to log order inquiry:", error);
       toast.error("Could not log your inquiry. Attempting to open WhatsApp directly...");
       
-      // Fallback checkout without saving to firebase
       const itemsList = cartItems
         .map(
           ({ product, quantity }, i) =>
-            `${i + 1}. *${product.name}* (Qty: ${quantity}) - ${formatINR(product.price * quantity)}`
+            `${i + 1}. *${product.name}* (Qty: ${quantity}) - ${formatINR(product.price * quantity)}\n   Link: ${window.location.origin}/product/${product.id}`
         )
-        .join("\n");
-      const message = `Hello Mayil Jewels! I would like to place an order for the following items:\n\n${itemsList}\n\n*Total Amount:* ${formatINR(cartTotal)}\n\n*My Details:*\nName: ${customerName}\nPhone: ${customerPhone}${customerEmail ? `\nEmail: ${customerEmail}` : ""}\n\nPlease let me know the payment and delivery details.`;
+        .join("\n\n");
+
+      const discountStr = appliedCoupon
+        ? `\n*Coupon Applied:* ${appliedCoupon.id} (-${appliedCoupon.discountType === "percentage" ? `${appliedCoupon.discountValue}%` : formatINR(appliedCoupon.discountValue)})\n*Discount Amount:* -${formatINR(discountAmount)}`
+        : "";
+
+      const deliveryStr = deliveryCharge > 0
+        ? `\n*Delivery:* ${formatINR(deliveryCharge)}`
+        : `\n*Delivery:* Complimentary`;
+
+      const message = `Hello Mayil Jewels! I would like to place an order for the following items:\n\n${itemsList}\n\n*Subtotal:* ${formatINR(cartTotal)}${discountStr}${deliveryStr}\n*Total Amount:* ${formatINR(grandTotal)}\n\n*My Details:*\nName: ${customerName}\nPhone: ${customerPhone}${customerEmail ? `\nEmail: ${customerEmail}` : ""}\n\nPlease let me know the payment and delivery details.`;
       const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
       window.open(url, "_blank");
       clearCart();
@@ -181,14 +258,65 @@ export default function Cart() {
                   <span className="text-muted-foreground">Subtotal</span>
                   <span>{formatINR(cartTotal)}</span>
                 </div>
+                {appliedCoupon && (
+                  <div className="flex justify-between text-green-700 font-medium animate-fade-in">
+                    <span>Discount ({appliedCoupon.id})</span>
+                    <span>-{formatINR(discountAmount)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Delivery</span>
-                  <span className="text-green-700">Complimentary</span>
+                  {deliveryCharge > 0 ? (
+                    <span>{formatINR(deliveryCharge)}</span>
+                  ) : (
+                    <span className="text-green-700">Complimentary</span>
+                  )}
                 </div>
               </div>
-              <div className="flex justify-between font-semibold text-lg mt-4 pt-4 border-t">
+
+              {/* Coupon Form */}
+              <div className="mt-4 pt-4 border-t border-border/60">
+                <label className="text-xs font-semibold uppercase text-muted-foreground block mb-2">Apply Coupon</label>
+                {appliedCoupon ? (
+                  <div className="flex items-center justify-between bg-green-50/50 text-green-800 px-3 py-2 rounded-sm border border-green-200/60">
+                    <div>
+                      <span className="font-bold text-xs uppercase">{appliedCoupon.id}</span>
+                      <span className="text-xs ml-1.5 font-medium">
+                        (-{appliedCoupon.discountType === "percentage" ? `${appliedCoupon.discountValue}%` : formatINR(appliedCoupon.discountValue)})
+                      </span>
+                    </div>
+                    <button type="button" onClick={handleRemoveCoupon} className="text-green-800 hover:text-red-700 font-bold text-xs transition-colors">
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={couponCode}
+                      onChange={(e) => { setCouponCode(e.target.value); setCouponError(""); }}
+                      placeholder="e.g. MAYIL10"
+                      className="flex-1 px-3 py-1.5 border rounded-sm text-sm uppercase focus:outline-none focus:ring-1 focus:ring-accent bg-white text-foreground"
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleApplyCoupon}
+                      disabled={isValidating}
+                      className="bg-[var(--brand)] hover:bg-[var(--brand-dark)] text-white text-xs h-auto py-1 px-4 rounded-sm uppercase tracking-wider"
+                    >
+                      {isValidating ? "Validating..." : "Apply"}
+                    </Button>
+                  </div>
+                )}
+                {couponError && <p className="text-xs text-red-600 mt-1">{couponError}</p>}
+              </div>
+
+              <div className="flex justify-between font-semibold text-lg mt-4 pt-4 border-t border-border/60">
                 <span>Total</span>
-                <span className="text-[var(--brand)]">{formatINR(cartTotal)}</span>
+                <span className="text-[var(--brand)]">
+                  {formatINR(grandTotal)}
+                </span>
               </div>
               <Button
                 className="w-full mt-6 h-12 bg-[var(--brand)] hover:bg-[var(--brand-dark)] rounded-sm uppercase tracking-wider text-xs"

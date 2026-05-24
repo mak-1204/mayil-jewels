@@ -47,3 +47,31 @@ export type Store = {
   phone: string;
   distance?: string;
 };
+
+export type WorldCollection = {
+  id: string;
+  title: string;
+  subtitle: string;
+  image: string;
+  bannerImage?: string;
+  href: string;
+  order?: number;
+};
+
+export type HeroBanner = {
+  id: string;
+  title: string;
+  subtitle: string;
+  image: string;
+  ctaText: string;
+  ctaHref: string;
+  active: boolean;
+  order?: number;
+};
+
+export type Coupon = {
+  id: string;
+  discountType: "percentage" | "fixed";
+  discountValue: number;
+  active: boolean;
+};

@@ -1,5 +1,6 @@
 import { useShop } from "@/contexts/ShopContext";
-import { categories } from "@/data/categories";
+import { useCategories } from "@/hooks/useCategories";
+import CategoryBar from "@/components/home/CategoryBar";
 import {
   Sheet,
   SheetContent,
@@ -28,12 +29,13 @@ const navLinks = [
   { label: "Imitation", href: "/collections?style=Imitation" },
   { label: "Wedding", href: "/collections?world=wedding" },
   { label: "New Arrivals", href: "/collections?new=true" },
-  { label: "Contact", href: "/contact" },
+  { label: "Stores", href: "/stores" },
 ];
 
 export default function SiteHeader() {
   const [location, setLocation] = useLocation();
   const { cartCount } = useShop();
+  const { categories } = useCategories();
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [visualOpen, setVisualOpen] = useState(false);
@@ -90,16 +92,6 @@ export default function SiteHeader() {
               aria-label="Search"
             >
               <Search className="w-5 h-5" />
-            </button>
-            <button
-              type="button"
-              className="hidden sm:flex p-2 hover:text-[var(--brand)]"
-              onClick={() => setStylingOpen(true)}
-              aria-label="Styling assistant"
-            >
-              <span className="text-xs font-medium border border-[var(--brand)] text-[var(--brand)] px-2 py-1 rounded-sm">
-                Style Me
-              </span>
             </button>
             <Link href="/stores" className="hidden lg:flex p-2 hover:text-[var(--brand)]" title="Find store">
               <MapPin className="w-5 h-5" />
@@ -182,23 +174,7 @@ export default function SiteHeader() {
         )}
       </div>
 
-      <nav className="hidden lg:block border-t border-border/30 bg-white">
-        <div className="container flex items-center justify-center gap-8 h-11 text-sm">
-          {navLinks.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className={`hover:text-[var(--brand)] transition-colors ${
-                location.startsWith(l.href.split("?")[0])
-                  ? "text-[var(--brand)] font-medium"
-                  : "text-foreground/80"
-              }`}
-            >
-              {l.label}
-            </Link>
-          ))}
-        </div>
-      </nav>
+      <CategoryBar />
 
       <VisualSearchDialog open={visualOpen} onOpenChange={setVisualOpen} />
       <StylingAssistantDialog open={stylingOpen} onOpenChange={setStylingOpen} />

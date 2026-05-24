@@ -11,6 +11,10 @@ import {
   Edit,
   Trash2,
   LayoutGrid,
+  Globe,
+  Image,
+  Percent,
+  Settings,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import {
@@ -22,9 +26,24 @@ import {
   addFirebaseCategory,
   updateFirebaseCategory,
   deleteFirebaseCategory,
+  addFirebaseWorldCollection,
+  updateFirebaseWorldCollection,
+  deleteFirebaseWorldCollection,
+  addFirebaseBanner,
+  updateFirebaseBanner,
+  deleteFirebaseBanner,
+  addFirebaseCoupon,
+  updateFirebaseCoupon,
+  deleteFirebaseCoupon,
+  getFirebaseDeliverySettings,
+  updateFirebaseDeliverySettings,
 } from "@/lib/firebase";
 import { useProducts } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
+import { useWorldCollections } from "@/hooks/useWorldCollections";
+import { useBanners } from "@/hooks/useBanners";
+import { useCoupons } from "@/hooks/useCoupons";
+import { useDeliverySettings } from "@/hooks/useDeliverySettings";
 import { formatINR } from "@/lib/format";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
@@ -35,8 +54,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import type { WorldCollection, HeroBanner, Coupon } from "@/types";
 
-type AdminTab = "dashboard" | "products" | "categories" | "inquiries";
+type AdminTab = "dashboard" | "products" | "categories" | "inquiries" | "world" | "banners" | "coupons" | "settings";
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
@@ -45,6 +65,10 @@ export default function AdminDashboard() {
 
   const { products, loading: productsLoading, refetch: refetchProducts } = useProducts();
   const { categories, loading: categoriesLoading, refetch: refetchCategories } = useCategories();
+  const { collections: worldCollections, loading: worldLoading, refetch: refetchWorld } = useWorldCollections();
+  const { banners, loading: bannersLoading, refetch: refetchBanners } = useBanners();
+  const { coupons, loading: couponsLoading, refetch: refetchCoupons } = useCoupons();
+  const { settings: deliverySettings, loading: settingsLoading, refetch: refetchSettings } = useDeliverySettings();
   const [orders, setOrders] = useState<any[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
 
@@ -93,7 +117,7 @@ export default function AdminDashboard() {
     );
   }
 
-  const isLoading = productsLoading || ordersLoading || categoriesLoading;
+  const isLoading = productsLoading || ordersLoading || categoriesLoading || worldLoading || bannersLoading || couponsLoading || settingsLoading;
 
   return (
     <PageLayout>
@@ -104,6 +128,9 @@ export default function AdminDashboard() {
             { tab: "dashboard", label: "Dashboard", icon: BarChart3 },
             { tab: "products", label: "Products", icon: Package },
             { tab: "categories", label: "Categories", icon: LayoutGrid },
+            { tab: "world", label: "World", icon: Globe },
+            { tab: "coupons", label: "Coupons", icon: Percent },
+            { tab: "settings", label: "Settings", icon: Settings },
             { tab: "inquiries", label: "Inquiries", icon: MessageSquare },
           ].map(({ tab, label, icon: Icon }) => (
             <button
@@ -133,6 +160,9 @@ export default function AdminDashboard() {
               { tab: "dashboard", label: "Dashboard", icon: BarChart3 },
               { tab: "products", label: "Products", icon: Package },
               { tab: "categories", label: "Categories", icon: LayoutGrid },
+              { tab: "world", label: "Mayil World", icon: Globe },
+              { tab: "coupons", label: "Coupons", icon: Percent },
+              { tab: "settings", label: "Settings", icon: Settings },
               { tab: "inquiries", label: "Inquiries", icon: MessageSquare },
             ].map(({ tab, label, icon: Icon }) => (
               <button
@@ -176,6 +206,10 @@ export default function AdminDashboard() {
                 {activeTab === "dashboard" && <DashboardView products={products} orders={orders} categories={categories} />}
                 {activeTab === "products" && <ProductsView products={products} categories={categories} refetchProducts={refetchProducts} />}
                 {activeTab === "categories" && <CategoriesView categories={categories} refetchCategories={refetchCategories} />}
+                {activeTab === "world" && <WorldCollectionsView collections={worldCollections} refetch={refetchWorld} />}
+                {activeTab === "banners" && <BannersView banners={banners} refetch={refetchBanners} />}
+                {activeTab === "coupons" && <CouponsView coupons={coupons} refetch={refetchCoupons} />}
+                {activeTab === "settings" && <SettingsView settings={deliverySettings} refetch={refetchSettings} />}
                 {activeTab === "inquiries" && <InquiriesView orders={orders} fetchOrders={fetchOrders} />}
               </>
             )}
@@ -474,6 +508,7 @@ function ProductsView({ products, categories, refetchProducts }: { products: any
     name: "",
     description: "",
     price: "",
+    originalPrice: "",
     weight: "",
     categoryId: "",
     style: "Imitation",
@@ -491,6 +526,7 @@ function ProductsView({ products, categories, refetchProducts }: { products: any
       name: "",
       description: "",
       price: "",
+      originalPrice: "",
       weight: "",
       categoryId: categories[0]?.id || "",
       style: "Imitation",
@@ -510,6 +546,7 @@ function ProductsView({ products, categories, refetchProducts }: { products: any
       name: product.name,
       description: product.description || "",
       price: String(product.price),
+      originalPrice: product.originalPrice ? String(product.originalPrice) : "",
       weight: product.weight ? String(product.weight) : "",
       categoryId: product.categoryId || categories[0]?.id || "",
       style: product.style || product.metal || "Imitation",
@@ -535,6 +572,7 @@ function ProductsView({ products, categories, refetchProducts }: { products: any
       slug,
       description: formData.description,
       price: Number(formData.price),
+      originalPrice: formData.originalPrice ? Number(formData.originalPrice) : undefined,
       weight: formData.weight ? Number(formData.weight) : undefined,
       categoryId: formData.categoryId,
       categorySlug,
@@ -651,10 +689,14 @@ function ProductsView({ products, categories, refetchProducts }: { products: any
               <input type="text" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full px-3 py-2 border rounded-sm focus:outline-none focus:ring-1 focus:ring-accent bg-white text-foreground" placeholder="Product name" />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="space-y-1">
-                <label className="text-xs font-medium uppercase text-muted-foreground">Price (INR)</label>
-                <input type="number" required value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} className="w-full px-3 py-2 border rounded-sm focus:outline-none focus:ring-1 focus:ring-accent bg-white text-foreground" placeholder="25000" />
+                <label className="text-xs font-medium uppercase text-muted-foreground">Original Price (INR)</label>
+                <input type="number" value={formData.originalPrice} onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })} className="w-full px-3 py-2 border rounded-sm focus:outline-none focus:ring-1 focus:ring-accent bg-white text-foreground" placeholder="3000" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium uppercase text-muted-foreground">Discounted Price (INR)</label>
+                <input type="number" required value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} className="w-full px-3 py-2 border rounded-sm focus:outline-none focus:ring-1 focus:ring-accent bg-white text-foreground" placeholder="2500" />
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-medium uppercase text-muted-foreground">Weight (grams)</label>
@@ -743,20 +785,26 @@ function ProductsView({ products, categories, refetchProducts }: { products: any
   );
 }
 
-// ─── INQUIRIES VIEW ───────────────────────────────────────────────────────────
-
 function InquiriesView({ orders, fetchOrders }: { orders: any[]; fetchOrders: () => void }) {
-  const handleStatusChange = async (id: string, currentStatus: string) => {
-    const statusMap: Record<string, string> = { pending: "contacted", contacted: "completed", completed: "cancelled", cancelled: "pending" };
-    const nextStatus = statusMap[currentStatus] ?? "pending";
+  const handleStatusChange = async (id: string, newStatus: string) => {
     try {
-      await updateFirebaseOrderStatus(id, nextStatus);
-      toast.success("Status updated successfully");
+      await updateFirebaseOrderStatus(id, newStatus);
+      toast.success("Status updated");
       fetchOrders();
     } catch (err: any) {
       toast.error(`Error: ${err.message || "Failed to update status"}`);
     }
   };
+
+  const statusOptions = [
+    { value: "pending", label: "Pending", color: "bg-amber-50 text-amber-700 border-amber-200" },
+    { value: "contacted", label: "Contacted", color: "bg-sky-50 text-sky-700 border-sky-200" },
+    { value: "completed", label: "Completed", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+    { value: "cancelled", label: "Cancelled", color: "bg-rose-50 text-rose-700 border-rose-200" },
+  ];
+
+  const getStatusStyle = (status: string) =>
+    statusOptions.find((s) => s.value === status)?.color ?? "bg-gray-50 text-gray-600 border-gray-200";
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -765,63 +813,724 @@ function InquiriesView({ orders, fetchOrders }: { orders: any[]; fetchOrders: ()
         <p className="text-muted-foreground">View and manage customer orders logged during WhatsApp checkout</p>
       </div>
 
+      {orders.length === 0 ? (
+        <div className="luxury-card border p-12 text-center">
+          <MessageSquare className="w-12 h-12 mx-auto text-muted-foreground/30 mb-4" />
+          <p className="text-lg text-muted-foreground">No inquiries yet</p>
+          <p className="text-sm text-muted-foreground/60 mt-1">Orders placed via WhatsApp will appear here</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {orders.map((inquiry: any) => {
+            const itemsList = Array.isArray(inquiry.items)
+              ? inquiry.items
+              : [];
+            return (
+              <div
+                key={inquiry.id}
+                className="luxury-card border p-0 overflow-hidden transition-all duration-300 hover:shadow-md"
+              >
+                {/* Header row */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-4 bg-secondary/20 border-b border-border/40">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-9 h-9 rounded-full bg-[var(--brand)]/10 text-[var(--brand)] flex items-center justify-center text-sm font-semibold shrink-0">
+                      {(inquiry.customerName || "?")[0].toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm truncate">{inquiry.customerName}</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {inquiry.customerPhone || inquiry.customerEmail || "No contact"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(inquiry.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      {" · "}
+                      {new Date(inquiry.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                    {/* Status dropdown */}
+                    <select
+                      value={inquiry.status || "pending"}
+                      onChange={(e) => handleStatusChange(inquiry.id, e.target.value)}
+                      className={`text-xs font-medium capitalize px-3 py-1.5 rounded-full border cursor-pointer outline-none transition-colors ${getStatusStyle(inquiry.status)}`}
+                    >
+                      {statusOptions.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Items + Total */}
+                <div className="px-5 py-4">
+                  {itemsList.length > 0 ? (
+                    <div className="space-y-2">
+                      {itemsList.map((item: any, idx: number) => (
+                        <div key={idx} className="flex items-center justify-between text-sm">
+                          <span className="text-foreground/80">
+                            {item.name}
+                            <span className="text-muted-foreground ml-1">×{item.quantity}</span>
+                          </span>
+                          <span className="font-medium text-foreground/70">
+                            {formatINR(item.price * item.quantity)}
+                          </span>
+                        </div>
+                      ))}
+                      
+                      {/* Detailed breakdown if coupon or delivery charge is defined */}
+                      <div className="pt-3 mt-2 border-t border-border/40 text-xs space-y-1">
+                        {inquiry.couponCode || (inquiry.deliveryCharge !== undefined && inquiry.deliveryCharge > 0) ? (
+                          <>
+                            <div className="flex justify-between text-muted-foreground">
+                              <span>Subtotal</span>
+                              <span>{formatINR(itemsList.reduce((acc: number, item: any) => acc + (item.price * item.quantity), 0))}</span>
+                            </div>
+                            {inquiry.couponCode && (
+                              <div className="flex justify-between text-green-700 font-medium">
+                                <span>Discount ({inquiry.couponCode})</span>
+                                <span>-{formatINR(inquiry.discountAmount ?? 0)}</span>
+                              </div>
+                            )}
+                            <div className="flex justify-between text-muted-foreground">
+                              <span>Delivery</span>
+                              {inquiry.deliveryCharge > 0 ? (
+                                <span>{formatINR(inquiry.deliveryCharge)}</span>
+                              ) : (
+                                <span className="text-green-700">Complimentary</span>
+                              )}
+                            </div>
+                          </>
+                        ) : null}
+                        
+                        <div className="flex items-center justify-between pt-2 text-sm font-semibold border-t border-border/20">
+                          <span className="text-foreground/80">Total</span>
+                          <span className="text-base font-bold text-[var(--brand)]">
+                            {formatINR(Number(inquiry.totalAmount))}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground italic">No items recorded</p>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── WORLD COLLECTIONS VIEW ───────────────────────────────────────────────────
+
+function WorldCollectionsView({ collections, refetch }: { collections: WorldCollection[]; refetch: () => void }) {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<WorldCollection | null>(null);
+  const [isPending, setIsPending] = useState(false);
+  const [form, setForm] = useState({ title: "", subtitle: "", image: "", bannerImage: "", href: "", order: 0 });
+
+  const openNew = () => {
+    setEditing(null);
+    setForm({ title: "", subtitle: "", image: "", bannerImage: "", href: "/collections", order: collections.length });
+    setDialogOpen(true);
+  };
+
+  const openEdit = (item: WorldCollection) => {
+    setEditing(item);
+    setForm({ title: item.title, subtitle: item.subtitle, image: item.image, bannerImage: item.bannerImage || "", href: item.href, order: item.order ?? 0 });
+    setDialogOpen(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsPending(true);
+    try {
+      const submissionForm = {
+        ...form,
+        image: form.bannerImage
+      };
+      if (editing) {
+        await updateFirebaseWorldCollection(editing.id, submissionForm);
+        toast.success("Updated!");
+      } else {
+        await addFirebaseWorldCollection(submissionForm);
+        toast.success("Created!");
+      }
+      setDialogOpen(false);
+      refetch();
+    } catch (err: any) {
+      toast.error(err.message || "Failed");
+    } finally {
+      setIsPending(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete this collection?")) return;
+    try {
+      await deleteFirebaseWorldCollection(id);
+      toast.success("Deleted!");
+      refetch();
+    } catch (err: any) {
+      toast.error(err.message || "Failed");
+    }
+  };
+
+  return (
+    <div className="space-y-8 animate-fade-in">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-4xl font-light mb-2">Mayil World</h1>
+          <p className="text-muted-foreground">Manage the occasion-based collections displayed on the homepage</p>
+        </div>
+        <Button className="luxury-button" onClick={openNew}>
+          <Plus className="w-4 h-4 mr-2" /> Add Collection
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {collections.map((w) => (
+          <div key={w.id} className="luxury-card overflow-hidden border group">
+            <div className="relative aspect-[3/4]">
+              <img
+                src={w.bannerImage || w.image}
+                alt={w.title}
+                className="w-full h-full object-cover"
+                onError={(e) => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=600&h=800&fit=crop"; }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                <h3 className="font-serif text-xl">{w.title}</h3>
+                <p className="text-xs text-white/80 mt-1">{w.subtitle}</p>
+              </div>
+              {/* Action overlay */}
+              <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                  type="button"
+                  onClick={() => openEdit(w)}
+                  className="w-8 h-8 rounded-full bg-white/90 text-foreground flex items-center justify-center hover:bg-white transition-colors"
+                >
+                  <Edit className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDelete(w.id)}
+                  className="w-8 h-8 rounded-full bg-white/90 text-destructive flex items-center justify-center hover:bg-white transition-colors"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+            <div className="p-3 text-xs text-muted-foreground truncate">
+              Link: {w.href}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{editing ? "Edit Collection" : "New Collection"}</DialogTitle>
+            <DialogDescription>This appears in the "Mayil World" section of the homepage.</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Title</label>
+              <input className="w-full border rounded-lg px-3 py-2 text-sm" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Subtitle</label>
+              <input className="w-full border rounded-lg px-3 py-2 text-sm" value={form.subtitle} onChange={(e) => setForm({ ...form, subtitle: e.target.value })} required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Banner Image URL (Landscape)</label>
+              <input className="w-full border rounded-lg px-3 py-2 text-sm" value={form.bannerImage} onChange={(e) => setForm({ ...form, bannerImage: e.target.value })} placeholder="https://..." required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Link</label>
+              <input className="w-full border rounded-lg px-3 py-2 text-sm" value={form.href} onChange={(e) => setForm({ ...form, href: e.target.value })} placeholder="/collections?world=wedding" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Order</label>
+              <input type="number" className="w-full border rounded-lg px-3 py-2 text-sm" value={form.order} onChange={(e) => setForm({ ...form, order: Number(e.target.value) })} />
+            </div>
+            <div className="flex justify-end gap-3 pt-2">
+              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button type="submit" className="luxury-button" disabled={isPending}>
+                {isPending ? "Saving..." : editing ? "Save Changes" : "Create"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+// ─── BANNERS VIEW ─────────────────────────────────────────────────────────────
+
+function BannersView({ banners, refetch }: { banners: HeroBanner[]; refetch: () => void }) {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<HeroBanner | null>(null);
+  const [isPending, setIsPending] = useState(false);
+  const [form, setForm] = useState({ title: "", subtitle: "", image: "", ctaText: "Shop Now", ctaHref: "/collections", active: true, order: 0 });
+
+  const openNew = () => {
+    setEditing(null);
+    setForm({ title: "", subtitle: "", image: "", ctaText: "Shop Now", ctaHref: "/collections", active: true, order: banners.length });
+    setDialogOpen(true);
+  };
+
+  const openEdit = (item: HeroBanner) => {
+    setEditing(item);
+    setForm({ title: item.title, subtitle: item.subtitle, image: item.image, ctaText: item.ctaText, ctaHref: item.ctaHref, active: item.active, order: item.order ?? 0 });
+    setDialogOpen(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsPending(true);
+    try {
+      if (editing) {
+        await updateFirebaseBanner(editing.id, form);
+        toast.success("Updated!");
+      } else {
+        await addFirebaseBanner(form);
+        toast.success("Created!");
+      }
+      setDialogOpen(false);
+      refetch();
+    } catch (err: any) {
+      toast.error(err.message || "Failed");
+    } finally {
+      setIsPending(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete this banner?")) return;
+    try {
+      await deleteFirebaseBanner(id);
+      toast.success("Deleted!");
+      refetch();
+    } catch (err: any) {
+      toast.error(err.message || "Failed");
+    }
+  };
+
+  const toggleActive = async (item: HeroBanner) => {
+    try {
+      await updateFirebaseBanner(item.id, { active: !item.active });
+      toast.success(item.active ? "Deactivated" : "Activated");
+      refetch();
+    } catch (err: any) {
+      toast.error(err.message || "Failed");
+    }
+  };
+
+  return (
+    <div className="space-y-8 animate-fade-in">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-4xl font-light mb-2">Hero Banners</h1>
+          <p className="text-muted-foreground">Manage the hero carousel shown at the top of the homepage</p>
+        </div>
+        <Button className="luxury-button" onClick={openNew}>
+          <Plus className="w-4 h-4 mr-2" /> Add Banner
+        </Button>
+      </div>
+
+      <div className="space-y-4">
+        {banners.map((b) => (
+          <div key={b.id} className="luxury-card border overflow-hidden">
+            <div className="flex flex-col sm:flex-row">
+              <div className="sm:w-64 shrink-0">
+                <img
+                  src={b.image}
+                  alt={b.title}
+                  className="w-full h-40 sm:h-full object-cover"
+                  onError={(e) => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=600&h=300&fit=crop"; }}
+                />
+              </div>
+              <div className="flex-1 p-5 flex flex-col justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                    <h3 className="font-semibold text-lg">{b.title}</h3>
+                    <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${b.active ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-gray-50 text-gray-500 border-gray-200"}`}>
+                      {b.active ? "Active" : "Inactive"}
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{b.subtitle}</p>
+                  <p className="text-xs text-muted-foreground mt-1">CTA: "{b.ctaText}" → {b.ctaHref}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant="outline" onClick={() => toggleActive(b)}>
+                    {b.active ? "Deactivate" : "Activate"}
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => openEdit(b)}>
+                    <Edit className="w-3.5 h-3.5 mr-1" /> Edit
+                  </Button>
+                  <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => handleDelete(b.id)}>
+                    <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+        {banners.length === 0 && (
+          <div className="luxury-card border p-12 text-center">
+            <Image className="w-12 h-12 mx-auto text-muted-foreground/30 mb-4" />
+            <p className="text-lg text-muted-foreground">No banners yet</p>
+            <p className="text-sm text-muted-foreground/60 mt-1">Add a hero banner to display at the top of the homepage</p>
+          </div>
+        )}
+      </div>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{editing ? "Edit Banner" : "New Banner"}</DialogTitle>
+            <DialogDescription>This appears in the hero carousel at the top of the homepage.</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Title</label>
+              <input className="w-full border rounded-lg px-3 py-2 text-sm" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Subtitle</label>
+              <input className="w-full border rounded-lg px-3 py-2 text-sm" value={form.subtitle} onChange={(e) => setForm({ ...form, subtitle: e.target.value })} required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Image URL</label>
+              <input className="w-full border rounded-lg px-3 py-2 text-sm" value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} required placeholder="https://..." />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium mb-1">Button Text</label>
+                <input className="w-full border rounded-lg px-3 py-2 text-sm" value={form.ctaText} onChange={(e) => setForm({ ...form, ctaText: e.target.value })} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Button Link</label>
+                <input className="w-full border rounded-lg px-3 py-2 text-sm" value={form.ctaHref} onChange={(e) => setForm({ ...form, ctaHref: e.target.value })} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium mb-1">Order</label>
+                <input type="number" className="w-full border rounded-lg px-3 py-2 text-sm" value={form.order} onChange={(e) => setForm({ ...form, order: Number(e.target.value) })} />
+              </div>
+              <div className="flex items-end pb-1">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} className="w-4 h-4 rounded" />
+                  <span className="text-sm">Active</span>
+                </label>
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 pt-2">
+              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button type="submit" className="luxury-button" disabled={isPending}>
+                {isPending ? "Saving..." : editing ? "Save Changes" : "Create"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+// ─── COUPONS VIEW ─────────────────────────────────────────────────────────────
+
+function CouponsView({ coupons, refetch }: { coupons: Coupon[]; refetch: () => void }) {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<Coupon | null>(null);
+  const [isPending, setIsPending] = useState(false);
+  const [form, setForm] = useState({ id: "", discountType: "percentage" as "percentage" | "fixed", discountValue: 0, active: true });
+
+  const openNew = () => {
+    setEditing(null);
+    setForm({ id: "", discountType: "percentage", discountValue: 0, active: true });
+    setDialogOpen(true);
+  };
+
+  const openEdit = (item: Coupon) => {
+    setEditing(item);
+    setForm({ id: item.id, discountType: item.discountType, discountValue: item.discountValue, active: item.active });
+    setDialogOpen(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsPending(true);
+    try {
+      const code = form.id.toUpperCase().trim();
+      if (!code) throw new Error("Coupon code cannot be empty");
+
+      if (editing) {
+        await updateFirebaseCoupon(editing.id, {
+          discountType: form.discountType,
+          discountValue: Number(form.discountValue),
+          active: form.active
+        });
+        toast.success("Coupon updated successfully!");
+      } else {
+        await addFirebaseCoupon({
+          id: code,
+          discountType: form.discountType,
+          discountValue: Number(form.discountValue),
+          active: form.active
+        });
+        toast.success("Coupon created successfully!");
+      }
+      setDialogOpen(false);
+      refetch();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save coupon");
+    } finally {
+      setIsPending(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this coupon?")) return;
+    try {
+      await deleteFirebaseCoupon(id);
+      toast.success("Coupon deleted!");
+      refetch();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete coupon");
+    }
+  };
+
+  return (
+    <div className="space-y-8 animate-fade-in">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-4xl font-light mb-2">Coupons</h1>
+          <p className="text-muted-foreground">Create and manage discount codes for checkout</p>
+        </div>
+        <Button className="luxury-button" onClick={openNew}>
+          <Plus className="w-4 h-4 mr-2" /> Add Coupon
+        </Button>
+      </div>
+
       <div className="luxury-card overflow-hidden border">
         <table className="w-full text-sm">
           <thead className="bg-secondary/50 border-b border-border/50">
             <tr>
-              <th className="px-6 py-4 text-left font-semibold">Customer</th>
-              <th className="px-6 py-4 text-left font-semibold">Contact</th>
-              <th className="px-6 py-4 text-left font-semibold">Items</th>
-              <th className="px-6 py-4 text-left font-semibold">Total</th>
+              <th className="px-6 py-4 text-left font-semibold">Code</th>
+              <th className="px-6 py-4 text-left font-semibold">Type</th>
+              <th className="px-6 py-4 text-left font-semibold">Value</th>
               <th className="px-6 py-4 text-left font-semibold">Status</th>
-              <th className="px-6 py-4 text-left font-semibold">Date</th>
               <th className="px-6 py-4 text-left font-semibold">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {orders.map((inquiry: any) => {
-              const itemsList = Array.isArray(inquiry.items)
-                ? inquiry.items.map((i: any) => `${i.name} (x${i.quantity})`).join(", ")
-                : "No items";
-              return (
-                <tr key={inquiry.id} className="border-b border-border/50 hover:bg-secondary/20 transition-colors">
-                  <td className="px-6 py-4 font-medium">{inquiry.customerName}</td>
-                  <td className="px-6 py-4 text-muted-foreground">
-                    {inquiry.customerEmail && <div className="text-xs">{inquiry.customerEmail}</div>}
-                    {inquiry.customerPhone && <div className="text-xs">{inquiry.customerPhone}</div>}
-                    {!inquiry.customerEmail && !inquiry.customerPhone && <div className="text-xs">N/A</div>}
-                  </td>
-                  <td className="px-6 py-4 text-muted-foreground truncate max-w-xs" title={itemsList}>{itemsList}</td>
-                  <td className="px-6 py-4 font-semibold">{formatINR(Number(inquiry.totalAmount))}</td>
-                  <td className="px-6 py-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${
-                      inquiry.status === "pending" ? "bg-yellow-100 text-yellow-700"
-                      : inquiry.status === "contacted" ? "bg-blue-100 text-blue-700"
-                      : inquiry.status === "completed" ? "bg-green-100 text-green-700"
-                      : "bg-red-100 text-red-700"
-                    }`}>
-                      {inquiry.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-muted-foreground text-xs">
-                    {new Date(inquiry.createdAt).toLocaleDateString()}{" "}
-                    {new Date(inquiry.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                  </td>
-                  <td className="px-6 py-4">
-                    <Button variant="outline" size="sm" onClick={() => handleStatusChange(inquiry.id, inquiry.status)}>
-                      Cycle Status
-                    </Button>
-                  </td>
-                </tr>
-              );
-            })}
-            {orders.length === 0 && (
+            {coupons.map((c) => (
+              <tr key={c.id} className="border-b border-border/50 hover:bg-secondary/20 transition-colors">
+                <td className="px-6 py-4 font-bold uppercase tracking-wider text-[var(--brand)]">{c.id}</td>
+                <td className="px-6 py-4 capitalize">{c.discountType === "percentage" ? "Percentage (%)" : "Fixed Amount (₹)"}</td>
+                <td className="px-6 py-4 font-medium">
+                  {c.discountType === "percentage" ? `${c.discountValue}%` : formatINR(c.discountValue)}
+                </td>
+                <td className="px-6 py-4">
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${c.active ? "bg-green-100 text-green-800 animate-pulse" : "bg-muted text-muted-foreground"}`}>
+                    {c.active ? "Active" : "Inactive"}
+                  </span>
+                </td>
+                <td className="px-6 py-4 space-x-2">
+                  <Button variant="outline" size="sm" onClick={() => openEdit(c)}>
+                    <Edit className="w-3.5 h-3.5 mr-1" /> Edit
+                  </Button>
+                  <Button variant="outline" size="sm" className="text-destructive" onClick={() => handleDelete(c.id)}>
+                    <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
+                  </Button>
+                </td>
+              </tr>
+            ))}
+            {coupons.length === 0 && (
               <tr>
-                <td colSpan={7} className="text-center py-8 text-muted-foreground">No inquiries found.</td>
+                <td colSpan={5} className="text-center py-8 text-muted-foreground">No coupons found. Click "Add Coupon" to create one.</td>
               </tr>
             )}
           </tbody>
         </table>
+      </div>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-serif text-xl">{editing ? "Edit Coupon" : "Add Coupon"}</DialogTitle>
+            <DialogDescription>Create a discount code that customers can apply at checkout.</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Coupon Code</label>
+              <input
+                className="w-full border rounded-lg px-3 py-2 text-sm uppercase bg-white text-foreground focus:outline-none focus:ring-1 focus:ring-accent"
+                value={form.id}
+                onChange={(e) => setForm({ ...form, id: e.target.value })}
+                placeholder="e.g. MAYIL10"
+                required
+                disabled={!!editing}
+              />
+              {editing && <p className="text-xs text-muted-foreground mt-1">Coupon code cannot be changed once created.</p>}
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Discount Type</label>
+                <select
+                  value={form.discountType}
+                  onChange={(e) => setForm({ ...form, discountType: e.target.value as any })}
+                  className="w-full border rounded-lg px-3 py-2 text-sm bg-white text-foreground focus:outline-none focus:ring-1 focus:ring-accent"
+                >
+                  <option value="percentage">Percentage (%)</option>
+                  <option value="fixed">Fixed Amount (₹)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Discount Value {form.discountType === "percentage" ? "(%)" : "(₹)"}
+                </label>
+                <input
+                  type="number"
+                  required
+                  min="1"
+                  value={form.discountValue || ""}
+                  onChange={(e) => setForm({ ...form, discountValue: Number(e.target.value) })}
+                  className="w-full border rounded-lg px-3 py-2 text-sm bg-white text-foreground focus:outline-none focus:ring-1 focus:ring-accent"
+                  placeholder={form.discountType === "percentage" ? "10" : "150"}
+                />
+              </div>
+            </div>
+            <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground cursor-pointer pt-2">
+              <input
+                type="checkbox"
+                checked={form.active}
+                onChange={(e) => setForm({ ...form, active: e.target.checked })}
+              />
+              Active (Available for use)
+            </label>
+            <div className="flex justify-end gap-3 pt-2">
+              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button type="submit" className="luxury-button" disabled={isPending}>
+                {isPending ? "Saving..." : editing ? "Save Changes" : "Create Coupon"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+// ─── SETTINGS VIEW ────────────────────────────────────────────────────────────
+
+function SettingsView({ settings, refetch }: { settings: any; refetch: () => void }) {
+  const [isPending, setIsPending] = useState(false);
+  const [form, setForm] = useState({ baseCharge: 0, additionalItemCharge: 0, freeThreshold: 0 });
+
+  useEffect(() => {
+    if (settings) {
+      setForm({
+        baseCharge: settings.baseCharge ?? 0,
+        additionalItemCharge: settings.additionalItemCharge ?? 0,
+        freeThreshold: settings.freeThreshold ?? 0
+      });
+    }
+  }, [settings]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsPending(true);
+    try {
+      await updateFirebaseDeliverySettings({
+        baseCharge: Number(form.baseCharge),
+        additionalItemCharge: Number(form.additionalItemCharge),
+        freeThreshold: Number(form.freeThreshold)
+      });
+      toast.success("Delivery settings updated successfully!");
+      refetch();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update settings");
+    } finally {
+      setIsPending(false);
+    }
+  };
+
+  return (
+    <div className="space-y-8 animate-fade-in max-w-lg">
+      <div>
+        <h1 className="text-4xl font-light mb-2">Settings</h1>
+        <p className="text-muted-foreground">Configure delivery charges and threshold options</p>
+      </div>
+
+      <div className="luxury-card p-6 border bg-card text-card-foreground">
+        <h3 className="font-serif text-2xl mb-4 border-b pb-2">Delivery Charges Settings</h3>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
+              Base Delivery Charge (₹)
+            </label>
+            <input
+              type="number"
+              min="0"
+              required
+              value={form.baseCharge || ""}
+              onChange={(e) => setForm({ ...form, baseCharge: Number(e.target.value) })}
+              className="w-full border rounded-lg px-3 py-2 text-sm bg-white text-foreground focus:outline-none focus:ring-1 focus:ring-accent"
+              placeholder="e.g. 100 (Applied for the 1st item)"
+            />
+            <p className="text-xs text-muted-foreground mt-1">This is the flat delivery charge applied when there is at least 1 item in the cart.</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
+              Additional Item Delivery Charge (₹)
+            </label>
+            <input
+              type="number"
+              min="0"
+              required
+              value={form.additionalItemCharge || ""}
+              onChange={(e) => setForm({ ...form, additionalItemCharge: Number(e.target.value) })}
+              className="w-full border rounded-lg px-3 py-2 text-sm bg-white text-foreground focus:outline-none focus:ring-1 focus:ring-accent"
+              placeholder="e.g. 20 (Applied per additional item)"
+            />
+            <p className="text-xs text-muted-foreground mt-1">This is the delivery charge added for each subsequent item in the cart (e.g. 2nd item, 3rd item, etc.).</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
+              Free Delivery Threshold (₹)
+            </label>
+            <input
+              type="number"
+              min="0"
+              required
+              value={form.freeThreshold || ""}
+              onChange={(e) => setForm({ ...form, freeThreshold: Number(e.target.value) })}
+              className="w-full border rounded-lg px-3 py-2 text-sm bg-white text-foreground focus:outline-none focus:ring-1 focus:ring-accent"
+              placeholder="e.g. 2000 (Enter 0 to disable)"
+            />
+            <p className="text-xs text-muted-foreground mt-1">Orders with a subtotal above this amount will get free delivery. Enter 0 to disable free delivery.</p>
+          </div>
+
+          <div className="pt-2">
+            <Button type="submit" className="luxury-button w-full" disabled={isPending}>
+              {isPending ? "Saving..." : "Save Delivery Settings"}
+            </Button>
+          </div>
+        </form>
       </div>
     </div>
   );

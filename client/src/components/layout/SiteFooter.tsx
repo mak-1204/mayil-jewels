@@ -1,66 +1,70 @@
-import { categories } from "@/data/categories";
 import { Link } from "wouter";
 import { WHATSAPP_NUMBER } from "@/const";
+import { Phone, Mail, Instagram, Youtube } from "lucide-react";
 
 export default function SiteFooter() {
   return (
-    <footer className="bg-[#1a1a1a] text-white/90 mt-16">
-      <div className="container py-12 md:py-16 grid grid-cols-2 md:grid-cols-4 gap-8">
-        <div className="col-span-2 md:col-span-1">
-          <p className="font-serif text-2xl tracking-[0.2em] text-white mb-4">MAYIL JEWELS</p>
-          <p className="text-sm text-white/60 leading-relaxed">
-            Your destination for antique and imitation jewellery — handcrafted fashion
-            pieces with premium plating, anti-tarnish care, and timeless Indian style.
+    <footer className="bg-[#f8f9fa] text-neutral-700 border-t border-border/50 mt-16 font-sans">
+      <div className="container py-12 md:py-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div>
+          <h4 className="text-sm font-bold uppercase tracking-wider mb-5 relative pb-2 inline-block text-neutral-900">
+            ABOUT
+            <span className="absolute bottom-0 left-0 w-8 h-[2px] bg-[#832729]" />
+          </h4>
+          <p className="text-sm text-neutral-600 leading-relaxed max-w-sm">
+            Welcome to Mayil Jewels. Your destination for antique and imitation jewellery — handcrafted fashion pieces with premium plating, anti-tarnish care, and timeless Indian style.
           </p>
         </div>
         <div>
-          <h4 className="text-sm font-semibold uppercase tracking-wider mb-4">Shop</h4>
-          <ul className="space-y-2 text-sm text-white/70">
-            {categories.slice(0, 6).map((c) => (
-              <li key={c.id}>
-                <Link href={`/collections?category=${c.slug}`} className="hover:text-white">
-                  {c.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div>
-          <h4 className="text-sm font-semibold uppercase tracking-wider mb-4">Services</h4>
-          <ul className="space-y-2 text-sm text-white/70">
-            <li>
-              <Link href="/collections" className="hover:text-white">
-                Browse Collections
-              </Link>
-            </li>
-            <li>
-              <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" className="hover:text-white">
-                WhatsApp Order Support
+          <h4 className="text-sm font-bold uppercase tracking-wider mb-5 relative pb-2 inline-block text-neutral-900">
+            CONTACT US
+            <span className="absolute bottom-0 left-0 w-8 h-[2px] bg-[#832729]" />
+          </h4>
+          <ul className="space-y-3 text-sm text-neutral-600">
+            <li className="flex items-center gap-2.5">
+              <Phone className="w-4 h-4 text-[#832729] shrink-0" />
+              <a href="tel:+14693676317" className="hover:text-[var(--brand)] transition-colors">
+                +1 (469) 367-6317 (WhatsApp only)
               </a>
             </li>
-            <li>
-              <Link href="/contact" className="hover:text-white">
-                Customer Care
-              </Link>
-            </li>
-            <li>
-              <a href="#" className="hover:text-white">
-                Jewellery Care Guide
+            <li className="flex items-center gap-2.5">
+              <Mail className="w-4 h-4 text-[#832729] shrink-0" />
+              <a href="mailto:hello@mayiljewels.com" className="hover:text-[var(--brand)] transition-colors">
+                hello@mayiljewels.com
               </a>
             </li>
           </ul>
         </div>
         <div>
-          <h4 className="text-sm font-semibold uppercase tracking-wider mb-4">Assurance</h4>
-          <ul className="space-y-2 text-sm text-white/70">
-            <li>Antique & Imitation Specialists</li>
-            <li>Premium Fashion Plating</li>
-            <li>Anti-Tarnish Protective Layer</li>
-            <li>Hypoallergenic & Skin-Friendly</li>
+          <h4 className="text-sm font-bold uppercase tracking-wider mb-5 relative pb-2 inline-block text-neutral-900">
+            FOLLOW US
+            <span className="absolute bottom-0 left-0 w-8 h-[2px] bg-[#832729]" />
+          </h4>
+          <ul className="space-y-3 text-sm text-neutral-600">
+            <li className="flex items-center gap-2.5">
+              <Instagram className="w-4 h-4 text-[#832729] shrink-0" />
+              <a
+                href="https://www.instagram.com/mayil.jewels/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-[var(--brand)] transition-colors"
+              >
+                Instagram
+              </a>
+            </li>
+            <li className="flex items-center gap-2.5">
+              <Youtube className="w-4 h-4 text-[#832729] shrink-0" />
+              <a
+                href="#"
+                className="hover:text-[var(--brand)] transition-colors"
+              >
+                YouTube
+              </a>
+            </li>
           </ul>
         </div>
       </div>
-      <div className="border-t border-white/10 py-6 text-center text-xs text-white/50">
+      <div className="border-t border-border/40 py-6 text-center text-xs text-neutral-500 bg-[#f1f3f5]">
         © {new Date().getFullYear()} Mayil Jewels. All rights reserved.
       </div>
     </footer>

@@ -1,7 +1,22 @@
-import { worldCollections } from "@/data/categories";
+import { useWorldCollections } from "@/hooks/useWorldCollections";
 import { Link } from "wouter";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function WorldCollections() {
+  const { collections, loading } = useWorldCollections();
+
+  if (loading) {
+    return (
+      <section className="py-12 md:py-16 bg-secondary/30">
+        <div className="container flex justify-center py-16">
+          <Spinner className="w-8 h-8 text-[var(--brand)]" />
+        </div>
+      </section>
+    );
+  }
+
+  if (collections.length === 0) return null;
+
   return (
     <section className="py-12 md:py-16 bg-secondary/30">
       <div className="container">
@@ -10,7 +25,7 @@ export default function WorldCollections() {
           <p className="text-muted-foreground">A companion for every occasion</p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-          {worldCollections.map((w) => (
+          {collections.map((w) => (
             <Link
               key={w.id}
               href={w.href}
@@ -20,6 +35,10 @@ export default function WorldCollections() {
                 src={w.image}
                 alt={w.title}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src =
+                    "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=600&h=800&fit=crop";
+                }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-4 text-white">

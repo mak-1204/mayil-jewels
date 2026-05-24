@@ -73,7 +73,9 @@ export const worldCollections = [
     title: "Wedding",
     subtitle: "Bridal & ceremony looks",
     image:
-      "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600&h=800&fit=crop&q=85",
+    bannerImage:
+      "https://images.unsplash.com/photo-1630019852942-f89202989a59?w=1920&h=800&fit=crop&q=90",
     href: "/collections?world=wedding",
   },
   {
@@ -81,7 +83,9 @@ export const worldCollections = [
     title: "Antique",
     subtitle: "Vintage temple & heritage",
     image:
-      "https://images.unsplash.com/photo-1617038260897-41a9ef663135?w=600&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1610030469668-93535c17b6b3?w=600&h=800&fit=crop&q=85",
+    bannerImage:
+      "https://images.unsplash.com/photo-1603561591411-07134e71a2a9?w=1920&h=800&fit=crop&q=90",
     href: "/collections?style=Antique",
   },
   {
@@ -89,7 +93,9 @@ export const worldCollections = [
     title: "Imitation",
     subtitle: "Fashion & party wear",
     image:
-      "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=600&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=600&h=800&fit=crop&q=85",
+    bannerImage:
+      "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=1920&h=800&fit=crop&q=90",
     href: "/collections?style=Imitation",
   },
   {
@@ -97,7 +103,9 @@ export const worldCollections = [
     title: "Daily Wear",
     subtitle: "Lightweight everyday pieces",
     image:
-      "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=600&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=600&h=800&fit=crop&q=85",
+    bannerImage:
+      "https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?w=1920&h=800&fit=crop&q=90",
     href: "/collections?occasion=daily",
   },
 ];
