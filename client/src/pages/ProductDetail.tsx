@@ -17,7 +17,7 @@ import {
   MessageSquare,
   Sparkles,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useRoute } from "wouter";
 import { toast } from "sonner";
 import { WHATSAPP_NUMBER } from "@/const";
@@ -58,6 +58,15 @@ export default function ProductDetail() {
     .slice(0, 4);
   const images = product.images.length ? product.images : [product.image];
   const wished = isWishlisted(product.id);
+
+  // Auto-scroll images every 3 seconds
+  useEffect(() => {
+    if (images.length <= 1) return;
+    const interval = setInterval(() => {
+      setActiveImage((prev) => (prev + 1) % images.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [images.length]);
 
   return (
     <PageLayout>

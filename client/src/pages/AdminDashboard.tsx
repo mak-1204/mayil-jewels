@@ -558,7 +558,7 @@ function ProductsView({ products, categories, refetchProducts }: { products: any
     featured: false,
     trending: false,
     isNew: true,
-    imageUrl: "",
+    imageUrls: "",
   });
 
   const handleOpenAdd = () => {
@@ -576,7 +576,7 @@ function ProductsView({ products, categories, refetchProducts }: { products: any
       featured: false,
       trending: false,
       isNew: true,
-      imageUrl: "",
+      imageUrls: "",
     });
     setOpen(true);
   };
@@ -596,7 +596,7 @@ function ProductsView({ products, categories, refetchProducts }: { products: any
       featured: Boolean(product.featured),
       trending: Boolean(product.trending),
       isNew: Boolean(product.isNew),
-      imageUrl: product.image || "",
+      imageUrls: product.images?.length ? product.images.join(",\\n") : (product.image || ""),
     });
     setOpen(true);
   };
@@ -623,8 +623,8 @@ function ProductsView({ products, categories, refetchProducts }: { products: any
       featured: formData.featured,
       trending: formData.trending,
       isNew: formData.isNew,
-      image: formData.imageUrl || "https://images.unsplash.com/photo-1599459183761-45c31a2b2b0e?w=600&h=750&fit=crop",
-      images: formData.imageUrl ? [formData.imageUrl] : [],
+      image: formData.imageUrls.split(/[\\n,]+/).map(u => u.trim()).filter(Boolean)[0] || "https://images.unsplash.com/photo-1599459183761-45c31a2b2b0e?w=600&h=750&fit=crop",
+      images: formData.imageUrls.split(/[\\n,]+/).map(u => u.trim()).filter(Boolean),
     };
 
     try {
@@ -789,11 +789,15 @@ function ProductsView({ products, categories, refetchProducts }: { products: any
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium uppercase text-muted-foreground">Image URL</label>
-              <input type="url" value={formData.imageUrl} onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })} className="w-full px-3 py-2 border rounded-sm focus:outline-none focus:ring-1 focus:ring-accent bg-white text-foreground" placeholder="https://images.unsplash.com/..." />
-              {formData.imageUrl && (
-                <div className="mt-2 w-16 h-20 rounded overflow-hidden border">
-                  <img src={formData.imageUrl} alt="Preview" className="w-full h-full object-cover" />
+              <label className="text-xs font-medium uppercase text-muted-foreground">Image URLs (comma or newline separated)</label>
+              <textarea rows={3} value={formData.imageUrls} onChange={(e) => setFormData({ ...formData, imageUrls: e.target.value })} className="w-full px-3 py-2 border rounded-sm focus:outline-none focus:ring-1 focus:ring-accent bg-white text-foreground resize-none" placeholder="https://image1.jpg&#10;https://image2.jpg" />
+              {formData.imageUrls && (
+                <div className="mt-2 flex gap-2 flex-wrap">
+                  {formData.imageUrls.split(/[\\n,]+/).map(u => u.trim()).filter(Boolean).map((url, idx) => (
+                    <div key={idx} className="w-16 h-20 rounded overflow-hidden border shrink-0">
+                      <img src={url} alt="Preview" className="w-full h-full object-cover" />
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
