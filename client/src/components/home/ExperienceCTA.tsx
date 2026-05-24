@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { MapPin } from "lucide-react";
 import { Link } from "wouter";
+import { WHATSAPP_NUMBER } from "@/const";
 
 export default function ExperienceCTA() {
   return (
@@ -21,7 +22,7 @@ export default function ExperienceCTA() {
             </Link>
           </Button>
           <Button asChild variant="outline" className="rounded-sm uppercase tracking-wider text-xs h-11">
-            <a href="tel:+914440001234">Book Consultation</a>
+            <a href={`https://wa.me/${WHATSAPP_NUMBER}`}>Chat via WhatsApp</a>
           </Button>
         </div>
       </div>
