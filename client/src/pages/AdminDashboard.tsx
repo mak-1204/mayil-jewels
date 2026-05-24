@@ -1,5 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import PageLayout from "@/components/layout/PageLayout";
+
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
 import {
@@ -92,7 +92,7 @@ export default function AdminDashboard() {
 
   if (user?.role !== "admin") {
     return (
-      <PageLayout>
+      <div className="min-h-screen flex flex-col bg-background">
         <div className="flex-1 flex items-center justify-center py-24">
           <div className="text-center space-y-4">
             <h1 className="text-2xl font-light">Access Denied</h1>
@@ -113,22 +113,74 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
-      </PageLayout>
+      </div>
     );
   }
 
   const isLoading = productsLoading || ordersLoading || categoriesLoading || worldLoading || bannersLoading || couponsLoading || settingsLoading;
 
   return (
-    <PageLayout>
-      <div className="flex-1 flex min-h-[calc(100vh-200px)]">
-        {/* Mobile tab bar */}
-        <div className="md:hidden flex border-b overflow-x-auto">
+    <div className="min-h-screen flex flex-col md:flex-row bg-background">
+      {/* Mobile Header / Top Bar */}
+      <div className="md:hidden flex items-center justify-between p-4 border-b bg-white shrink-0">
+        <div className="flex items-center gap-2">
+          <Link href="/">
+            <a className="font-serif text-xl font-medium tracking-wide">Mayil Jewels Admin</a>
+          </Link>
+        </div>
+        <button
+          onClick={() => {
+            logout();
+            setLocation("/");
+          }}
+          className="p-2 -mr-2 text-muted-foreground hover:text-foreground"
+        >
+          <LogOut className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* Mobile tab bar */}
+      <div className="md:hidden flex border-b overflow-x-auto bg-white shrink-0">
+        {[
+          { tab: "dashboard", label: "Dashboard", icon: BarChart3 },
+          { tab: "products", label: "Products", icon: Package },
+          { tab: "categories", label: "Categories", icon: LayoutGrid },
+          { tab: "world", label: "World", icon: Globe },
+          { tab: "coupons", label: "Coupons", icon: Percent },
+          { tab: "settings", label: "Settings", icon: Settings },
+          { tab: "inquiries", label: "Inquiries", icon: MessageSquare },
+        ].map(({ tab, label, icon: Icon }) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab as AdminTab)}
+            className={`flex flex-col items-center gap-1 px-4 py-3 text-xs shrink-0 border-b-2 transition-colors ${
+              activeTab === tab
+                ? "border-[var(--brand)] text-[var(--brand)]"
+                : "border-transparent text-muted-foreground"
+            }`}
+          >
+            <Icon className="w-4 h-4" />
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex w-64 bg-secondary/30 border-r border-border/50 flex-col min-h-screen shrink-0 sticky top-0">
+        <div className="p-6 space-y-2">
+          <Link href="/">
+            <a className="block mb-2 text-sm text-[var(--brand)] hover:underline">&larr; Back to Store</a>
+          </Link>
+          <h2 className="text-xl font-light">Admin Panel</h2>
+          <p className="text-sm text-muted-foreground">Welcome, {user?.name}</p>
+        </div>
+
+        <nav className="flex-1 px-4 space-y-2 overflow-y-auto">
           {[
             { tab: "dashboard", label: "Dashboard", icon: BarChart3 },
             { tab: "products", label: "Products", icon: Package },
             { tab: "categories", label: "Categories", icon: LayoutGrid },
-            { tab: "world", label: "World", icon: Globe },
+            { tab: "world", label: "Mayil World", icon: Globe },
             { tab: "coupons", label: "Coupons", icon: Percent },
             { tab: "settings", label: "Settings", icon: Settings },
             { tab: "inquiries", label: "Inquiries", icon: MessageSquare },
@@ -136,87 +188,54 @@ export default function AdminDashboard() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab as AdminTab)}
-              className={`flex flex-col items-center gap-1 px-4 py-3 text-xs shrink-0 border-b-2 transition-colors ${
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                 activeTab === tab
-                  ? "border-[var(--brand)] text-[var(--brand)]"
-                  : "border-transparent text-muted-foreground"
+                  ? "bg-accent text-accent-foreground"
+                  : "hover:bg-secondary/50"
               }`}
             >
-              <Icon className="w-4 h-4" />
+              <Icon className="w-5 h-5" />
               {label}
             </button>
           ))}
+        </nav>
+
+        <div className="p-4 border-t border-border/50 shrink-0">
+          <button
+            onClick={() => {
+              logout();
+              setLocation("/");
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-destructive/10 text-destructive transition-colors"
+          >
+            <LogOut className="w-5 h-5" />
+            Logout
+          </button>
         </div>
+      </aside>
 
-        {/* Desktop Sidebar */}
-        <aside className="hidden md:flex w-64 bg-secondary/30 border-r border-border/50 flex-col">
-          <div className="p-6 space-y-2">
-            <h2 className="text-xl font-light">Admin Panel</h2>
-            <p className="text-sm text-muted-foreground">Welcome, {user?.name}</p>
-          </div>
-
-          <nav className="flex-1 px-4 space-y-2">
-            {[
-              { tab: "dashboard", label: "Dashboard", icon: BarChart3 },
-              { tab: "products", label: "Products", icon: Package },
-              { tab: "categories", label: "Categories", icon: LayoutGrid },
-              { tab: "world", label: "Mayil World", icon: Globe },
-              { tab: "coupons", label: "Coupons", icon: Percent },
-              { tab: "settings", label: "Settings", icon: Settings },
-              { tab: "inquiries", label: "Inquiries", icon: MessageSquare },
-            ].map(({ tab, label, icon: Icon }) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab as AdminTab)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                  activeTab === tab
-                    ? "bg-accent text-accent-foreground"
-                    : "hover:bg-secondary/50"
-                }`}
-              >
-                <Icon className="w-5 h-5" />
-                {label}
-              </button>
-            ))}
-          </nav>
-
-          <div className="p-4 border-t border-border/50">
-            <button
-              onClick={() => {
-                logout();
-                setLocation("/");
-              }}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-destructive/10 text-destructive transition-colors"
-            >
-              <LogOut className="w-5 h-5" />
-              Logout
-            </button>
-          </div>
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 overflow-auto">
-          <div className="container py-8">
-            {isLoading ? (
-              <div className="flex justify-center items-center py-24">
-                <Spinner className="w-8 h-8 text-[var(--brand)]" />
-              </div>
-            ) : (
-              <>
-                {activeTab === "dashboard" && <DashboardView products={products} orders={orders} categories={categories} />}
-                {activeTab === "products" && <ProductsView products={products} categories={categories} refetchProducts={refetchProducts} />}
-                {activeTab === "categories" && <CategoriesView categories={categories} refetchCategories={refetchCategories} />}
-                {activeTab === "world" && <WorldCollectionsView collections={worldCollections} refetch={refetchWorld} />}
-                {activeTab === "banners" && <BannersView banners={banners} refetch={refetchBanners} />}
-                {activeTab === "coupons" && <CouponsView coupons={coupons} refetch={refetchCoupons} />}
-                {activeTab === "settings" && <SettingsView settings={deliverySettings} refetch={refetchSettings} />}
-                {activeTab === "inquiries" && <InquiriesView orders={orders} fetchOrders={fetchOrders} />}
-              </>
-            )}
-          </div>
-        </main>
-      </div>
-    </PageLayout>
+      {/* Main Content */}
+      <main className="flex-1 overflow-auto bg-background/50">
+        <div className="container py-6 md:py-8 max-w-6xl">
+          {isLoading ? (
+            <div className="flex justify-center items-center py-24">
+              <Spinner className="w-8 h-8 text-[var(--brand)]" />
+            </div>
+          ) : (
+            <>
+              {activeTab === "dashboard" && <DashboardView products={products} orders={orders} categories={categories} />}
+              {activeTab === "products" && <ProductsView products={products} categories={categories} refetchProducts={refetchProducts} />}
+              {activeTab === "categories" && <CategoriesView categories={categories} refetchCategories={refetchCategories} />}
+              {activeTab === "world" && <WorldCollectionsView collections={worldCollections} refetch={refetchWorld} />}
+              {activeTab === "banners" && <BannersView banners={banners} refetch={refetchBanners} />}
+              {activeTab === "coupons" && <CouponsView coupons={coupons} refetch={refetchCoupons} />}
+              {activeTab === "settings" && <SettingsView settings={deliverySettings} refetch={refetchSettings} />}
+              {activeTab === "inquiries" && <InquiriesView orders={orders} fetchOrders={fetchOrders} />}
+            </>
+          )}
+        </div>
+      </main>
+    </div>
   );
 }
 

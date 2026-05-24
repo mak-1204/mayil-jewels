@@ -107,9 +107,6 @@ export default function SiteHeader() {
                 </span>
               )}
             </Link>
-            <Link href="/login" className="p-2 hover:text-[var(--brand)]" aria-label="Admin Portal">
-              <User className="w-5 h-5" />
-            </Link>
 
             <Sheet>
               <SheetTrigger asChild>
