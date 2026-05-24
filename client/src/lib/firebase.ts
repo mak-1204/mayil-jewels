@@ -718,16 +718,16 @@ export async function validateFirebaseCoupon(code: string): Promise<Coupon | nul
 // 6. DELIVERY SETTINGS SERVICES
 // ==========================================
 export type DeliverySettings = {
-  baseCharge: number;
-  additionalItemCharge: number;
+  itemCharges: { count: number; charge: number }[];
   freeThreshold: number;
 };
 
 const LOCAL_DELIVERY_SETTINGS_KEY = "mayil_delivery_settings";
 
 const defaultDeliverySettings: DeliverySettings = {
-  baseCharge: 0,
-  additionalItemCharge: 0,
+  itemCharges: [
+    { count: 1, charge: 0 }
+  ],
   freeThreshold: 0,
 };
 

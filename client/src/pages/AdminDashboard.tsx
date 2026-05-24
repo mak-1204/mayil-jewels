@@ -1437,13 +1437,20 @@ function CouponsView({ coupons, refetch }: { coupons: Coupon[]; refetch: () => v
 
 function SettingsView({ settings, refetch }: { settings: any; refetch: () => void }) {
   const [isPending, setIsPending] = useState(false);
-  const [form, setForm] = useState({ baseCharge: 0, additionalItemCharge: 0, freeThreshold: 0 });
+  const [form, setForm] = useState<{ itemCharges: { count: number; charge: number }[], freeThreshold: number }>({
+    itemCharges: [{ count: 1, charge: 0 }],
+    freeThreshold: 0
+  });
 
   useEffect(() => {
     if (settings) {
+      // Fallback for previous schema if baseCharge exists instead of itemCharges
+      const charges = settings.itemCharges?.length 
+        ? settings.itemCharges 
+        : [{ count: 1, charge: settings.baseCharge ?? 0 }];
+      
       setForm({
-        baseCharge: settings.baseCharge ?? 0,
-        additionalItemCharge: settings.additionalItemCharge ?? 0,
+        itemCharges: charges.sort((a: any, b: any) => a.count - b.count),
         freeThreshold: settings.freeThreshold ?? 0
       });
     }
@@ -1453,9 +1460,17 @@ function SettingsView({ settings, refetch }: { settings: any; refetch: () => voi
     e.preventDefault();
     setIsPending(true);
     try {
+      // Ensure it is sorted and valid before saving
+      const validCharges = form.itemCharges
+        .filter(c => c.count > 0 && c.charge >= 0)
+        .sort((a, b) => a.count - b.count);
+
+      if (validCharges.length === 0) {
+        throw new Error("You must specify at least one valid item charge rule.");
+      }
+
       await updateFirebaseDeliverySettings({
-        baseCharge: Number(form.baseCharge),
-        additionalItemCharge: Number(form.additionalItemCharge),
+        itemCharges: validCharges,
         freeThreshold: Number(form.freeThreshold)
       });
       toast.success("Delivery settings updated successfully!");
@@ -1467,46 +1482,99 @@ function SettingsView({ settings, refetch }: { settings: any; refetch: () => voi
     }
   };
 
+  const addChargeRow = () => {
+    const nextCount = form.itemCharges.length > 0 
+      ? Math.max(...form.itemCharges.map(c => c.count)) + 1 
+      : 1;
+    setForm({
+      ...form,
+      itemCharges: [...form.itemCharges, { count: nextCount, charge: 0 }]
+    });
+  };
+
+  const updateChargeRow = (index: number, field: 'count' | 'charge', value: number) => {
+    const newCharges = [...form.itemCharges];
+    newCharges[index] = { ...newCharges[index], [field]: value };
+    setForm({ ...form, itemCharges: newCharges });
+  };
+
+  const removeChargeRow = (index: number) => {
+    setForm({
+      ...form,
+      itemCharges: form.itemCharges.filter((_, i) => i !== index)
+    });
+  };
+
   return (
-    <div className="space-y-8 animate-fade-in max-w-lg">
+    <div className="space-y-8 animate-fade-in max-w-2xl">
       <div>
         <h1 className="text-4xl font-light mb-2">Settings</h1>
-        <p className="text-muted-foreground">Configure delivery charges and threshold options</p>
+        <p className="text-muted-foreground">Configure delivery charges based on the number of items</p>
       </div>
 
       <div className="luxury-card p-6 border bg-card text-card-foreground">
         <h3 className="font-serif text-2xl mb-4 border-b pb-2">Delivery Charges Settings</h3>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1">
-              Base Delivery Charge (₹)
-            </label>
-            <input
-              type="number"
-              min="0"
-              required
-              value={form.baseCharge || ""}
-              onChange={(e) => setForm({ ...form, baseCharge: Number(e.target.value) })}
-              className="w-full border rounded-lg px-3 py-2 text-sm bg-white text-foreground focus:outline-none focus:ring-1 focus:ring-accent"
-              placeholder="e.g. 100 (Applied for the 1st item)"
-            />
-            <p className="text-xs text-muted-foreground mt-1">This is the flat delivery charge applied when there is at least 1 item in the cart.</p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1">
-              Additional Item Delivery Charge (₹)
-            </label>
-            <input
-              type="number"
-              min="0"
-              required
-              value={form.additionalItemCharge || ""}
-              onChange={(e) => setForm({ ...form, additionalItemCharge: Number(e.target.value) })}
-              className="w-full border rounded-lg px-3 py-2 text-sm bg-white text-foreground focus:outline-none focus:ring-1 focus:ring-accent"
-              placeholder="e.g. 20 (Applied per additional item)"
-            />
-            <p className="text-xs text-muted-foreground mt-1">This is the delivery charge added for each subsequent item in the cart (e.g. 2nd item, 3rd item, etc.).</p>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="block text-sm font-medium text-muted-foreground">
+                Item-Based Delivery Charges
+              </label>
+              <Button type="button" variant="outline" size="sm" onClick={addChargeRow}>
+                <Plus className="w-3.5 h-3.5 mr-1" /> Add Rule
+              </Button>
+            </div>
+            
+            <div className="bg-secondary/20 border rounded-lg p-4 space-y-3">
+              <div className="grid grid-cols-12 gap-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                <div className="col-span-5">Number of Items (From)</div>
+                <div className="col-span-5">Delivery Charge (₹)</div>
+                <div className="col-span-2 text-center">Action</div>
+              </div>
+              
+              {form.itemCharges.map((rule, index) => (
+                <div key={index} className="grid grid-cols-12 gap-3 items-center">
+                  <div className="col-span-5">
+                    <input
+                      type="number"
+                      min="1"
+                      required
+                      value={rule.count || ""}
+                      onChange={(e) => updateChargeRow(index, 'count', Number(e.target.value))}
+                      className="w-full border rounded-lg px-3 py-2 text-sm bg-white text-foreground focus:outline-none focus:ring-1 focus:ring-accent"
+                      placeholder="e.g. 1"
+                    />
+                  </div>
+                  <div className="col-span-5">
+                    <input
+                      type="number"
+                      min="0"
+                      required
+                      value={rule.charge || ""}
+                      onChange={(e) => updateChargeRow(index, 'charge', Number(e.target.value))}
+                      className="w-full border rounded-lg px-3 py-2 text-sm bg-white text-foreground focus:outline-none focus:ring-1 focus:ring-accent"
+                      placeholder="e.g. 100"
+                    />
+                  </div>
+                  <div className="col-span-2 flex justify-center">
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10 h-9 w-9 p-0"
+                      onClick={() => removeChargeRow(index)}
+                      disabled={form.itemCharges.length === 1}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              <p className="text-xs text-muted-foreground mt-3">
+                Rules apply to the specified quantity and any quantities above it, until the next higher rule. (e.g. Rule for 2 items will apply to 2 and 3 items if the next rule is for 4 items).
+              </p>
+            </div>
           </div>
 
           <div>

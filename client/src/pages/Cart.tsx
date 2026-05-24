@@ -76,11 +76,25 @@ export default function Cart() {
 
   const deliveryCharge = (() => {
     if (!deliverySettings || totalItemsCount === 0) return 0;
-    const { baseCharge, additionalItemCharge, freeThreshold } = deliverySettings;
+    
+    // Check free threshold first
+    const freeThreshold = deliverySettings.freeThreshold || 0;
     if (freeThreshold > 0 && cartTotal >= freeThreshold) {
       return 0;
     }
-    return baseCharge + (totalItemsCount - 1) * additionalItemCharge;
+
+    // Support new schema (itemCharges array)
+    if (deliverySettings.itemCharges && Array.isArray(deliverySettings.itemCharges) && deliverySettings.itemCharges.length > 0) {
+      // Find the applicable rule by sorting descending (highest count first)
+      const sortedCharges = [...deliverySettings.itemCharges].sort((a: any, b: any) => b.count - a.count);
+      const applicableRule = sortedCharges.find((r: any) => totalItemsCount >= r.count);
+      return applicableRule ? applicableRule.charge : 0;
+    }
+    
+    // Fallback for old schema
+    const baseCharge = deliverySettings.baseCharge || 0;
+    const additionalCharge = deliverySettings.additionalItemCharge || 0;
+    return baseCharge + (totalItemsCount - 1) * additionalCharge;
   })();
 
   const grandTotal = discountedTotal + deliveryCharge;
