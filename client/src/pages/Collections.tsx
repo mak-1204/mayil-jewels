@@ -15,7 +15,7 @@ import { useSearch } from "wouter";
 import { useProducts } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
 import { Spinner } from "@/components/ui/spinner";
-
+import { WHATSAPP_NUMBER } from "@/const";
 function useQueryParams() {
   const search = useSearch();
   return useMemo(() => new URLSearchParams(search), [search]);
@@ -196,9 +196,16 @@ export default function Collections() {
                 <p className="text-lg text-muted-foreground mb-4">
                   No products match your filters
                 </p>
-                <Button asChild variant="outline">
-                  <a href="/collections">View all jewellery</a>
-                </Button>
+                <div className="flex flex-col sm:flex-row justify-center gap-3">
+                  <Button asChild variant="outline">
+                    <a href="/collections">View all jewellery</a>
+                  </Button>
+                  <Button asChild className="bg-[#25D366] hover:bg-[#128C7E] text-white">
+                    <a href={`https://wa.me/${WHATSAPP_NUMBER}?text=Hi, I am looking for a specific product/collection but couldn't find it.`} target="_blank" rel="noopener noreferrer">
+                      Chat via WhatsApp
+                    </a>
+                  </Button>
+                </div>
               </div>
             )}
           </div>
