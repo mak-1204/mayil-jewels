@@ -381,7 +381,7 @@ function CategoriesView({ categories, refetchCategories }: { categories: any[]; 
       </div>
 
       {/* Category Table */}
-      <div className="luxury-card overflow-hidden border">
+      <div className="luxury-card overflow-x-auto border">
         <table className="w-full text-sm">
           <thead className="bg-secondary/50 border-b border-border/50">
             <tr>
@@ -647,7 +647,7 @@ function ProductsView({ products, categories, refetchProducts }: { products: any
         </Button>
       </div>
 
-      <div className="luxury-card overflow-hidden border">
+      <div className="luxury-card overflow-x-auto border">
         <table className="w-full text-sm">
           <thead className="bg-secondary/50 border-b border-border/50">
             <tr>
@@ -1342,7 +1342,7 @@ function CouponsView({ coupons, refetch }: { coupons: Coupon[]; refetch: () => v
         </Button>
       </div>
 
-      <div className="luxury-card overflow-hidden border">
+      <div className="luxury-card overflow-x-auto border">
         <table className="w-full text-sm">
           <thead className="bg-secondary/50 border-b border-border/50">
             <tr>
