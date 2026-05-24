@@ -1648,19 +1648,25 @@ function SettingsView({ settings, refetch }: { settings: any; refetch: () => voi
 // ─── LEADS (ENQUIRIES) VIEW ──────────────────────────────────────────────────
 
 function LeadsView({ enquiries, fetchEnquiries }: { enquiries: any[]; fetchEnquiries: () => void }) {
-  const handleStatusChange = async (id: string, currentStatus: string) => {
-    let nextStatus = "contacted";
-    if (currentStatus === "contacted") nextStatus = "resolved";
-    if (currentStatus === "resolved") nextStatus = "new";
-    
+  const handleStatusChange = async (id: string, newStatus: string) => {
     try {
-      await updateFirebaseEnquiryStatus(id, nextStatus as any);
-      toast.success(`Lead marked as ${nextStatus}`);
+      await updateFirebaseEnquiryStatus(id, newStatus as any);
+      toast.success("Status updated");
       fetchEnquiries();
     } catch (err: any) {
       toast.error(err.message || "Failed to update status");
     }
   };
+
+  const statusOptions = [
+    { value: "new", label: "New", color: "bg-red-50 text-red-700 border-red-200" },
+    { value: "contacted", label: "Contacted", color: "bg-yellow-50 text-yellow-700 border-yellow-200" },
+    { value: "resolved", label: "Resolved", color: "bg-green-50 text-green-700 border-green-200" },
+  ];
+
+  const getStatusStyle = (status: string) =>
+    statusOptions.find((s) => s.value === status)?.color ?? "bg-gray-50 text-gray-600 border-gray-200";
+
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this lead?")) return;
@@ -1701,22 +1707,19 @@ function LeadsView({ enquiries, fetchEnquiries }: { enquiries: any[]; fetchEnqui
                 <td className="px-6 py-4 font-medium">{lead.name}</td>
                 <td className="px-6 py-4">{lead.phone}</td>
                 <td className="px-6 py-4">
-                  <span
-                    className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      lead.status === "new"
-                        ? "bg-red-100 text-red-800 animate-pulse"
-                        : lead.status === "contacted"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : "bg-green-100 text-green-800"
-                    }`}
+                  <select
+                    value={lead.status || "new"}
+                    onChange={(e) => handleStatusChange(lead.id, e.target.value)}
+                    className={`text-xs font-medium capitalize px-3 py-1.5 rounded-full border cursor-pointer outline-none transition-colors ${getStatusStyle(lead.status)}`}
                   >
-                    {lead.status.toUpperCase()}
-                  </span>
+                    {statusOptions.map((opt) => (
+                      <option key={opt.value} value={opt.value} className="bg-white text-foreground">
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
                 </td>
                 <td className="px-6 py-4 space-x-2 whitespace-nowrap">
-                  <Button variant="outline" size="sm" onClick={() => handleStatusChange(lead.id, lead.status)}>
-                    Change Status
-                  </Button>
                   <Button variant="outline" size="sm" className="text-destructive" onClick={() => handleDelete(lead.id)}>
                     <Trash2 className="w-3.5 h-3.5" />
                   </Button>
