@@ -676,7 +676,7 @@ function ProductsView({ products, categories, refetchProducts }: { products: any
               <th className="px-6 py-4 text-left font-semibold">Name</th>
               <th className="px-6 py-4 text-left font-semibold">Category</th>
               <th className="px-6 py-4 text-left font-semibold">Style</th>
-              <th className="px-6 py-4 text-left font-semibold">Price</th>
+              <th className="px-6 py-4 text-left font-semibold">Price (Disc / Orig)</th>
               <th className="px-6 py-4 text-left font-semibold">Featured</th>
               <th className="px-6 py-4 text-left font-semibold">Actions</th>
             </tr>
@@ -689,7 +689,14 @@ function ProductsView({ products, categories, refetchProducts }: { products: any
                   <td className="px-6 py-4 font-medium">{product.name}</td>
                   <td className="px-6 py-4 text-muted-foreground">{categoryName}</td>
                   <td className="px-6 py-4 text-muted-foreground">{product.style || product.metal || "Imitation"}</td>
-                  <td className="px-6 py-4 font-medium">{formatINR(Number(product.price))}</td>
+                  <td className="px-6 py-4">
+                    <div className="flex flex-col gap-1">
+                      <span className="font-medium">{formatINR(Number(product.price))}</span>
+                      {product.originalPrice && product.originalPrice > product.price && (
+                        <span className="text-xs text-muted-foreground line-through">{formatINR(Number(product.originalPrice))}</span>
+                      )}
+                    </div>
+                  </td>
                   <td className="px-6 py-4">
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${product.featured ? "bg-accent/20 text-accent" : "bg-muted text-muted-foreground"}`}>
                       {product.featured ? "Yes" : "No"}
