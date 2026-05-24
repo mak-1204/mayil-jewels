@@ -15,6 +15,7 @@ import {
   Image,
   Percent,
   Settings,
+  Phone,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import {
@@ -37,6 +38,9 @@ import {
   deleteFirebaseCoupon,
   getFirebaseDeliverySettings,
   updateFirebaseDeliverySettings,
+  getFirebaseEnquiries,
+  updateFirebaseEnquiryStatus,
+  deleteFirebaseEnquiry,
 } from "@/lib/firebase";
 import { useProducts } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
@@ -56,7 +60,7 @@ import {
 } from "@/components/ui/dialog";
 import type { WorldCollection, HeroBanner, Coupon } from "@/types";
 
-type AdminTab = "dashboard" | "products" | "categories" | "inquiries" | "world" | "banners" | "coupons" | "settings";
+type AdminTab = "dashboard" | "products" | "categories" | "inquiries" | "leads" | "world" | "banners" | "coupons" | "settings";
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
@@ -71,6 +75,8 @@ export default function AdminDashboard() {
   const { settings: deliverySettings, loading: settingsLoading, refetch: refetchSettings } = useDeliverySettings();
   const [orders, setOrders] = useState<any[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
+  const [enquiries, setEnquiries] = useState<any[]>([]);
+  const [enquiriesLoading, setEnquiriesLoading] = useState(true);
 
   const fetchOrders = async () => {
     setOrdersLoading(true);
@@ -84,9 +90,22 @@ export default function AdminDashboard() {
     }
   };
 
+  const fetchEnquiries = async () => {
+    setEnquiriesLoading(true);
+    try {
+      const data = await getFirebaseEnquiries();
+      setEnquiries(data);
+    } catch (error) {
+      console.error("Failed to load enquiries:", error);
+    } finally {
+      setEnquiriesLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (user?.role === "admin") {
       fetchOrders();
+      fetchEnquiries();
     }
   }, [user]);
 
@@ -117,7 +136,7 @@ export default function AdminDashboard() {
     );
   }
 
-  const isLoading = productsLoading || ordersLoading || categoriesLoading || worldLoading || bannersLoading || couponsLoading || settingsLoading;
+  const isLoading = productsLoading || ordersLoading || enquiriesLoading || categoriesLoading || worldLoading || bannersLoading || couponsLoading || settingsLoading;
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-background">
@@ -148,7 +167,8 @@ export default function AdminDashboard() {
           { tab: "world", label: "World", icon: Globe },
           { tab: "coupons", label: "Coupons", icon: Percent },
           { tab: "settings", label: "Settings", icon: Settings },
-          { tab: "inquiries", label: "Inquiries", icon: MessageSquare },
+          { tab: "inquiries", label: "Orders", icon: MessageSquare },
+          { tab: "leads", label: "Leads", icon: Phone },
         ].map(({ tab, label, icon: Icon }) => (
           <button
             key={tab}
@@ -183,7 +203,8 @@ export default function AdminDashboard() {
             { tab: "world", label: "Mayil World", icon: Globe },
             { tab: "coupons", label: "Coupons", icon: Percent },
             { tab: "settings", label: "Settings", icon: Settings },
-            { tab: "inquiries", label: "Inquiries", icon: MessageSquare },
+            { tab: "inquiries", label: "Orders", icon: MessageSquare },
+            { tab: "leads", label: "Leads", icon: Phone },
           ].map(({ tab, label, icon: Icon }) => (
             <button
               key={tab}
@@ -231,6 +252,7 @@ export default function AdminDashboard() {
               {activeTab === "coupons" && <CouponsView coupons={coupons} refetch={refetchCoupons} />}
               {activeTab === "settings" && <SettingsView settings={deliverySettings} refetch={refetchSettings} />}
               {activeTab === "inquiries" && <InquiriesView orders={orders} fetchOrders={fetchOrders} />}
+              {activeTab === "leads" && <LeadsView enquiries={enquiries} fetchEnquiries={fetchEnquiries} />}
             </>
           )}
         </div>
@@ -1622,3 +1644,94 @@ function SettingsView({ settings, refetch }: { settings: any; refetch: () => voi
     </div>
   );
 }
+
+// ─── LEADS (ENQUIRIES) VIEW ──────────────────────────────────────────────────
+
+function LeadsView({ enquiries, fetchEnquiries }: { enquiries: any[]; fetchEnquiries: () => void }) {
+  const handleStatusChange = async (id: string, currentStatus: string) => {
+    let nextStatus = "contacted";
+    if (currentStatus === "contacted") nextStatus = "resolved";
+    if (currentStatus === "resolved") nextStatus = "new";
+    
+    try {
+      await updateFirebaseEnquiryStatus(id, nextStatus as any);
+      toast.success(`Lead marked as ${nextStatus}`);
+      fetchEnquiries();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update status");
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this lead?")) return;
+    try {
+      await deleteFirebaseEnquiry(id);
+      toast.success("Lead deleted successfully!");
+      fetchEnquiries();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete lead");
+    }
+  };
+
+  return (
+    <div className="space-y-8 animate-fade-in">
+      <div>
+        <h1 className="text-4xl font-light mb-2">Leads / Enquiries</h1>
+        <p className="text-muted-foreground">Manage customer enquiries collected from the website popup.</p>
+      </div>
+
+      <div className="luxury-card overflow-x-auto border">
+        <table className="w-full text-sm">
+          <thead className="bg-secondary/50 border-b border-border/50">
+            <tr>
+              <th className="px-6 py-4 text-left font-semibold">Date</th>
+              <th className="px-6 py-4 text-left font-semibold">Customer Name</th>
+              <th className="px-6 py-4 text-left font-semibold">Mobile Number</th>
+              <th className="px-6 py-4 text-left font-semibold">Status</th>
+              <th className="px-6 py-4 text-left font-semibold">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {enquiries.map((lead) => (
+              <tr key={lead.id} className="border-b border-border/50 hover:bg-secondary/20 transition-colors">
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {new Date(lead.createdAt).toLocaleDateString()} <br />
+                  <span className="text-xs text-muted-foreground">{new Date(lead.createdAt).toLocaleTimeString()}</span>
+                </td>
+                <td className="px-6 py-4 font-medium">{lead.name}</td>
+                <td className="px-6 py-4">{lead.phone}</td>
+                <td className="px-6 py-4">
+                  <span
+                    className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      lead.status === "new"
+                        ? "bg-red-100 text-red-800 animate-pulse"
+                        : lead.status === "contacted"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : "bg-green-100 text-green-800"
+                    }`}
+                  >
+                    {lead.status.toUpperCase()}
+                  </span>
+                </td>
+                <td className="px-6 py-4 space-x-2 whitespace-nowrap">
+                  <Button variant="outline" size="sm" onClick={() => handleStatusChange(lead.id, lead.status)}>
+                    Change Status
+                  </Button>
+                  <Button variant="outline" size="sm" className="text-destructive" onClick={() => handleDelete(lead.id)}>
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </Button>
+                </td>
+              </tr>
+            ))}
+            {enquiries.length === 0 && (
+              <tr>
+                <td colSpan={5} className="text-center py-8 text-muted-foreground">No leads found yet.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+

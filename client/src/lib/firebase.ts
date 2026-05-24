@@ -768,5 +768,94 @@ export async function updateFirebaseDeliverySettings(settings: DeliverySettings)
   localStorage.setItem(LOCAL_DELIVERY_SETTINGS_KEY, JSON.stringify(settings));
 }
 
+// ==========================================
+// 7. ENQUIRIES (LEADS) SERVICES
+// ==========================================
+export type Enquiry = {
+  id?: string;
+  name: string;
+  phone: string;
+  createdAt: number;
+  status: "new" | "contacted" | "resolved";
+};
+
+const LOCAL_ENQUIRIES_KEY = "mayil_mock_enquiries";
+
+function getLocalEnquiries(): Enquiry[] {
+  const data = localStorage.getItem(LOCAL_ENQUIRIES_KEY);
+  if (!data) return [];
+  try { return JSON.parse(data); } catch { return []; }
+}
+
+function saveLocalEnquiries(items: Enquiry[]) {
+  localStorage.setItem(LOCAL_ENQUIRIES_KEY, JSON.stringify(items));
+}
+
+export async function getFirebaseEnquiries(): Promise<Enquiry[]> {
+  if (db) {
+    try {
+      const q = query(collection(db, "enquiries"), orderBy("createdAt", "desc"));
+      const snap = await getDocs(q);
+      const list: Enquiry[] = [];
+      snap.forEach((d) => list.push({ ...d.data(), id: d.id } as Enquiry));
+      return list;
+    } catch (e) {
+      console.error("getFirebaseEnquiries failed, using local:", e);
+    }
+  }
+  return getLocalEnquiries().sort((a, b) => b.createdAt - a.createdAt);
+}
+
+export async function addFirebaseEnquiry(item: Omit<Enquiry, "id" | "createdAt" | "status">): Promise<Enquiry> {
+  const newEnquiry: Enquiry = {
+    ...item,
+    createdAt: Date.now(),
+    status: "new",
+  };
+  
+  if (db) {
+    try {
+      const docRef = await addDoc(collection(db, "enquiries"), newEnquiry);
+      return { ...newEnquiry, id: docRef.id };
+    } catch (e) {
+      console.error("addFirebaseEnquiry failed:", e);
+    }
+  }
+  const final = { ...newEnquiry, id: String(Date.now()) };
+  const list = getLocalEnquiries();
+  list.push(final);
+  saveLocalEnquiries(list);
+  return final;
+}
+
+export async function updateFirebaseEnquiryStatus(id: string, status: Enquiry["status"]): Promise<void> {
+  if (db) {
+    try {
+      await updateDoc(doc(db, "enquiries", id), { status });
+      return;
+    } catch (e) {
+      console.error("updateFirebaseEnquiryStatus failed:", e);
+    }
+  }
+  const list = getLocalEnquiries();
+  const idx = list.findIndex(e => e.id === id);
+  if (idx !== -1) {
+    list[idx].status = status;
+    saveLocalEnquiries(list);
+  }
+}
+
+export async function deleteFirebaseEnquiry(id: string): Promise<void> {
+  if (db) {
+    try {
+      await deleteDoc(doc(db, "enquiries", id));
+      return;
+    } catch (e) {
+      console.error("deleteFirebaseEnquiry failed:", e);
+    }
+  }
+  saveLocalEnquiries(getLocalEnquiries().filter(e => e.id !== id));
+}
+
 // Export raw services if needed elsewhere
 export { auth, db };

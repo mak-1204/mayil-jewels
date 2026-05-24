@@ -1,6 +1,7 @@
 import AnnouncementBar from "./AnnouncementBar";
 import SiteFooter from "./SiteFooter";
 import SiteHeader from "./SiteHeader";
+import EnquiryPopup from "./EnquiryPopup";
 import type { ReactNode } from "react";
 
 export default function PageLayout({ children }: { children: ReactNode }) {
@@ -10,6 +11,7 @@ export default function PageLayout({ children }: { children: ReactNode }) {
       <SiteHeader />
       <main className="flex-1">{children}</main>
       <SiteFooter />
+      <EnquiryPopup />
     </div>
   );
 }
