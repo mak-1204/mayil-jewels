@@ -108,42 +108,7 @@ export default function SiteHeader() {
               )}
             </Link>
 
-            <Sheet>
-              <SheetTrigger asChild>
-                <button type="button" className="lg:hidden p-2" aria-label="Menu">
-                  <Menu className="w-5 h-5" />
-                </button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-[300px]">
-                <SheetHeader>
-                  <SheetTitle className="font-serif text-[var(--brand)] tracking-widest">
-                    MENU
-                  </SheetTitle>
-                </SheetHeader>
-                <nav className="flex flex-col gap-1 mt-6">
-                  {navLinks.map((l) => (
-                    <Link
-                      key={l.href}
-                      href={l.href}
-                      className="py-3 border-b border-border/50 text-sm font-medium hover:text-[var(--brand)]"
-                    >
-                      {l.label}
-                    </Link>
-                  ))}
-                </nav>
-                <div className="mt-6 grid grid-cols-2 gap-2">
-                  {categories.slice(0, 6).map((c) => (
-                    <Link
-                      key={c.id}
-                      href={`/collections?category=${c.slug}`}
-                      className="text-xs text-center py-2 bg-secondary/50 rounded-sm hover:bg-secondary"
-                    >
-                      {c.name}
-                    </Link>
-                  ))}
-                </div>
-              </SheetContent>
-            </Sheet>
+
           </div>
         </div>
 
