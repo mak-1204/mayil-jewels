@@ -112,7 +112,7 @@ export default function ProductDetail() {
                 <span className="text-2xl font-semibold text-[var(--brand)]">
                   {formatINR(product.price)}
                 </span>
-                {product.originalPrice && (
+                {product.originalPrice && product.originalPrice > product.price && (
                   <span className="text-muted-foreground line-through">
                     {formatINR(product.originalPrice)}
                   </span>

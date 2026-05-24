@@ -86,7 +86,7 @@ export default function ProductCard({ product, compact }: Props) {
             <span className="font-semibold text-[var(--brand)]">
               {formatINR(product.price)}
             </span>
-            {product.originalPrice && (
+            {product.originalPrice && product.originalPrice > product.price && (
               <span className="text-xs text-muted-foreground line-through">
                 {formatINR(product.originalPrice)}
               </span>
