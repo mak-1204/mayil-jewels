@@ -348,7 +348,7 @@ function CategoriesView({ categories, refetchCategories }: { categories: any[]; 
                   }}
                 />
               </div>
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+              <div className="absolute inset-0 bg-black/40 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
                 <span className="text-white text-xs font-semibold flex items-center gap-1">
                   <Edit className="w-3 h-3" /> Edit
                 </span>
@@ -1010,7 +1010,7 @@ function WorldCollectionsView({ collections, refetch }: { collections: WorldColl
                 <p className="text-xs text-white/80 mt-1">{w.subtitle}</p>
               </div>
               {/* Action overlay */}
-              <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute top-2 right-2 flex gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                 <button
                   type="button"
                   onClick={() => openEdit(w)}

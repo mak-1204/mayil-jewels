@@ -55,7 +55,7 @@ export default function ProductCard({ product, compact }: Props) {
             />
           </button>
           {!compact && (
-            <div className="absolute inset-x-0 bottom-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-black/50 to-transparent">
+            <div className="absolute inset-x-0 bottom-0 p-3 translate-y-0 lg:translate-y-full lg:group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-transparent via-black/30 to-black/70 lg:from-black/50 lg:to-transparent">
               <button
                 type="button"
                 onClick={(e) => {
