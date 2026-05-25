@@ -799,20 +799,35 @@ function ProductsView({ products, categories, refetchProducts }: { products: any
                               storagePath="products"
                             />
                           </div>
-                          {urls.length > 1 && (
+                          <div className="flex gap-1.5 mt-6 shrink-0">
                             <Button 
                               type="button" 
                               variant="outline" 
-                              className="mt-6 shrink-0 text-destructive px-3" 
+                              className="px-3" 
                               onClick={() => {
-                                const newArr = urls.filter((_, i) => i !== idx);
+                                const newArr = [...urls];
+                                newArr.splice(idx + 1, 0, ""); // Insert new empty box after the current one
                                 setFormData({ ...formData, imageUrls: newArr.join("\n") });
                               }}
-                              title="Remove Image"
+                              title="Add Image Field Below"
                             >
-                              ✕
+                              +
                             </Button>
-                          )}
+                            {urls.length > 1 && (
+                              <Button 
+                                type="button" 
+                                variant="outline" 
+                                className="text-destructive px-3" 
+                                onClick={() => {
+                                  const newArr = urls.filter((_, i) => i !== idx);
+                                  setFormData({ ...formData, imageUrls: newArr.join("\n") });
+                                }}
+                                title="Remove Image"
+                              >
+                                ✕
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       ))}
                       <Button 

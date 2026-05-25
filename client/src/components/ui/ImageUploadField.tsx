@@ -47,15 +47,27 @@ export function ImageUploadField({
           placeholder={placeholder}
         />
 
-        {value && (
+        {value ? (
           <Button
             type="button"
             variant="outline"
-            className="shrink-0 px-3"
+            className="shrink-0 px-3 flex items-center gap-1.5"
             onClick={openCropperWithCurrentUrl}
             title="Adjust/Crop Current Image"
           >
             <CropIcon className="w-4 h-4" />
+            <span className="text-xs font-medium">Crop</span>
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            variant="outline"
+            disabled
+            className="shrink-0 px-3 flex items-center gap-1.5 opacity-50 cursor-not-allowed"
+            title="Enter an image link to adjust/crop"
+          >
+            <CropIcon className="w-4 h-4" />
+            <span className="text-xs font-medium">Crop</span>
           </Button>
         )}
       </div>
