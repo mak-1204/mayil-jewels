@@ -75,7 +75,7 @@ export function ImageCropperDialog({
           return;
         }
         resolve(blob);
-      }, "image/jpeg");
+      }, "image/jpeg", 0.7);
     });
   };
 

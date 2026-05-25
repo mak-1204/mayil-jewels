@@ -837,18 +837,17 @@ export async function updateFirebaseEnquiryStatus(id: string, status: "new" | "c
 // 8. STORAGE SERVICES
 // ==========================================
 export async function uploadFirebaseImage(file: File | Blob, path: string): Promise<string> {
-  if (storage) {
-    try {
-      const storageRef = ref(storage, path);
-      await uploadBytes(storageRef, file);
-      const downloadURL = await getDownloadURL(storageRef);
-      return downloadURL;
-    } catch (error) {
-      console.error("Firebase Storage upload failed", error);
-      throw error;
-    }
-  }
-  throw new Error("Firebase Storage is not configured. Cannot upload images.");
+  // Since Firebase Storage is not set up, immediately return the Base64 Data URL
+  // instead of waiting for a timeout.
+  console.log("Using Base64 Data URL fallback for image upload (Firebase Storage disabled)");
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      resolve(reader.result as string);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
 
 export async function deleteFirebaseEnquiry(id: string): Promise<void> {
