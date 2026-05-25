@@ -28,6 +28,15 @@ export function ImageCropperDialog({
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
   const [isUploading, setIsUploading] = useState(false);
 
+  React.useEffect(() => {
+    if (open) {
+      setCrop({ x: 0, y: 0 });
+      setZoom(1);
+      setCroppedAreaPixels(null);
+      setIsUploading(false);
+    }
+  }, [open, imageSrc]);
+
   const onCropComplete = useCallback((croppedArea: any, croppedAreaPixels: any) => {
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);

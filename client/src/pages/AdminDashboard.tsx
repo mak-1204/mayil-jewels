@@ -581,7 +581,7 @@ function ProductsView({ products, categories, refetchProducts }: { products: any
       featured: Boolean(product.featured),
       trending: Boolean(product.trending),
       isNew: Boolean(product.isNew),
-      imageUrls: product.images?.length ? product.images.join(",\\n") : (product.image || ""),
+      imageUrls: product.images?.length ? product.images.join("\n") : (product.image || ""),
     });
     setOpen(true);
   };
@@ -608,8 +608,8 @@ function ProductsView({ products, categories, refetchProducts }: { products: any
       featured: formData.featured,
       trending: formData.trending,
       isNew: formData.isNew,
-      image: formData.imageUrls.split(/[\\n,]+/).map(u => u.trim()).filter(Boolean)[0] || "https://images.unsplash.com/photo-1599459183761-45c31a2b2b0e?w=600&h=750&fit=crop",
-      images: formData.imageUrls.split(/[\\n,]+/).map(u => u.trim()).filter(Boolean),
+      image: formData.imageUrls.split('\n').map(u => u.trim()).filter(Boolean)[0] || "https://images.unsplash.com/photo-1599459183761-45c31a2b2b0e?w=600&h=750&fit=crop",
+      images: formData.imageUrls.split('\n').map(u => u.trim()).filter(Boolean),
     };
 
     try {
