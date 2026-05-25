@@ -36,8 +36,10 @@ export function ImageCropperDialog({
     new Promise((resolve, reject) => {
       const image = new Image();
       image.addEventListener("load", () => resolve(image));
-      image.addEventListener("error", (error) => reject(error));
-      image.setAttribute("crossOrigin", "anonymous"); // needed to avoid cross-origin issues
+      image.addEventListener("error", (error) => reject(new Error("Failed to load image for cropping. This might be a CORS issue with external images.")));
+      if (!url.startsWith("data:")) {
+        image.setAttribute("crossOrigin", "anonymous");
+      }
       image.src = url;
     });
 

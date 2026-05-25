@@ -774,26 +774,61 @@ function ProductsView({ products, categories, refetchProducts }: { products: any
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium uppercase text-muted-foreground">Image URLs (comma or newline separated)</label>
-              <div className="mb-2">
-                <ImageUploadField
-                  label="Upload New Image & Append"
-                  value={""}
-                  onChange={(url) => setFormData({ ...formData, imageUrls: formData.imageUrls ? `${formData.imageUrls}\n${url}` : url })}
-                  aspect={1}
-                  storagePath="products"
-                />
+              <label className="text-xs font-medium uppercase text-muted-foreground">Product Images</label>
+              <div className="pt-1">
+                {(() => {
+                  // Split by newline and preserve empty entries for new boxes
+                  const urls = typeof formData.imageUrls === 'string' && formData.imageUrls.length > 0 
+                    ? formData.imageUrls.split('\n') 
+                    : [""];
+                    
+                  return (
+                    <>
+                      {urls.map((url, idx) => (
+                        <div key={idx} className="flex gap-2 items-start mb-3">
+                          <div className="flex-1">
+                            <ImageUploadField
+                              label={idx === 0 ? "Main Image" : `Additional Image ${idx}`}
+                              value={url}
+                              onChange={(newUrl) => {
+                                const newArr = [...urls];
+                                newArr[idx] = newUrl;
+                                setFormData({ ...formData, imageUrls: newArr.join("\n") });
+                              }}
+                              aspect={1}
+                              storagePath="products"
+                            />
+                          </div>
+                          {urls.length > 1 && (
+                            <Button 
+                              type="button" 
+                              variant="outline" 
+                              className="mt-6 shrink-0 text-destructive px-3" 
+                              onClick={() => {
+                                const newArr = urls.filter((_, i) => i !== idx);
+                                setFormData({ ...formData, imageUrls: newArr.join("\n") });
+                              }}
+                              title="Remove Image"
+                            >
+                              ✕
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        className="w-full mt-2 border-dashed text-muted-foreground"
+                        onClick={() => {
+                          setFormData({ ...formData, imageUrls: [...urls, ""].join("\n") });
+                        }}
+                      >
+                        + Add Another Image
+                      </Button>
+                    </>
+                  );
+                })()}
               </div>
-              <textarea rows={3} value={formData.imageUrls} onChange={(e) => setFormData({ ...formData, imageUrls: e.target.value })} className="w-full px-3 py-2 border rounded-sm focus:outline-none focus:ring-1 focus:ring-accent bg-white text-foreground resize-none" placeholder="https://image1.jpg&#10;https://image2.jpg" />
-              {formData.imageUrls && (
-                <div className="mt-2 flex gap-2 flex-wrap">
-                  {formData.imageUrls.split(/[\\n,]+/).map(u => u.trim()).filter(Boolean).map((url, idx) => (
-                    <div key={idx} className="w-16 h-20 rounded overflow-hidden border shrink-0">
-                      <img src={url} alt="Preview" className="w-full h-full object-cover" />
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
 
             <div className="space-y-1">

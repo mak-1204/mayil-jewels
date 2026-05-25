@@ -17,28 +17,11 @@ export function ImageUploadField({
   onChange,
   label = "Image URL",
   aspect = 4 / 5,
-  storagePath = "uploads",
   placeholder = "https://images.unsplash.com/..."
 }: ImageUploadFieldProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  // Upload button removed as requested
   const [cropDialogOpen, setCropDialogOpen] = useState(false);
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setCropImageSrc(reader.result as string);
-        setCropDialogOpen(true);
-      };
-      reader.readAsDataURL(file);
-    }
-    // reset input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
 
   const handleCropComplete = (croppedUrl: string) => {
     onChange(croppedUrl);
@@ -62,22 +45,7 @@ export function ImageUploadField({
           className="flex-1 px-3 py-2 border rounded-sm focus:outline-none focus:ring-1 focus:ring-accent bg-white text-foreground"
           placeholder={placeholder}
         />
-        <input
-          type="file"
-          accept="image/*"
-          className="hidden"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-        />
-        <Button
-          type="button"
-          variant="outline"
-          className="shrink-0 px-3"
-          onClick={() => fileInputRef.current?.click()}
-          title="Upload Image"
-        >
-          <Upload className="w-4 h-4" />
-        </Button>
+
         {value && (
           <Button
             type="button"
