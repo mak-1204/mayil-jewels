@@ -17,6 +17,7 @@ export function ImageUploadField({
   onChange,
   label = "Image URL",
   aspect = 4 / 5,
+  storagePath = "uploads",
   placeholder = "https://images.unsplash.com/..."
 }: ImageUploadFieldProps) {
   // Upload button removed as requested
@@ -40,7 +41,7 @@ export function ImageUploadField({
       <div className="flex gap-2">
         <input
           type="url"
-          value={value}
+          value={value || ""}
           onChange={(e) => onChange(e.target.value)}
           className="flex-1 px-3 py-2 border rounded-sm focus:outline-none focus:ring-1 focus:ring-accent bg-white text-foreground"
           placeholder={placeholder}

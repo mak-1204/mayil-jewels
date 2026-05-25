@@ -92,8 +92,8 @@ export default function Cart() {
     }
     
     // Fallback for old schema
-    const baseCharge = deliverySettings.baseCharge || 0;
-    const additionalCharge = deliverySettings.additionalItemCharge || 0;
+    const baseCharge = (deliverySettings as any).baseCharge || 0;
+    const additionalCharge = (deliverySettings as any).additionalItemCharge || 0;
     return baseCharge + (totalItemsCount - 1) * additionalCharge;
   })();
 

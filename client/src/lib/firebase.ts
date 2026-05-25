@@ -811,8 +811,18 @@ export async function getFirebaseEnquiries(): Promise<Enquiry[]> {
   return getLocalEnquiries().sort((a, b) => b.createdAt - a.createdAt);
 }
 
-export async function addFirebaseEnquiry(enquiry: Omit<Enquiry, "id">): Promise<Enquiry> {
-  const newEnq = { ...enquiry, id: String(Date.now()) } as Enquiry;
+export async function addFirebaseEnquiry(
+  enquiry: Omit<Enquiry, "id" | "createdAt" | "status"> & { 
+    createdAt?: number; 
+    status?: "new" | "contacted" | "resolved" 
+  }
+): Promise<Enquiry> {
+  const newEnq = { 
+    createdAt: Date.now(), 
+    status: "new" as const, 
+    ...enquiry, 
+    id: String(Date.now()) 
+  } as Enquiry;
   if (db) {
     try {
       const docRef = await addDoc(collection(db, "enquiries"), newEnq);

@@ -60,7 +60,7 @@ export default function CategoryBar() {
               <div key={sec.hash} className="flex items-center shrink-0">
                 <a
                   href={`/${sec.hash}`}
-                  onClick={(e) => handleNav(e, sec.hash)}
+                  onClick={(e) => handleNav(e, sec.hash || "")}
                   className="flex items-center gap-2 px-5 py-3 text-sm text-foreground/75 hover:text-[var(--brand)] font-medium transition-colors border-b-2 border-transparent hover:border-[var(--brand)] group"
                 >
                   <Icon className="w-4 h-4 text-muted-foreground/80 group-hover:text-[var(--brand)] transition-colors" />
