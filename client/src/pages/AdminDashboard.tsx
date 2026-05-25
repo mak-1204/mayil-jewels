@@ -58,6 +58,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ImageUploadField } from "@/components/ui/ImageUploadField";
 import type { WorldCollection, HeroBanner, Coupon } from "@/types";
 
 type AdminTab = "dashboard" | "products" | "categories" | "inquiries" | "leads" | "world" | "banners" | "coupons" | "settings";
@@ -499,29 +500,13 @@ function CategoriesView({ categories, refetchCategories }: { categories: any[]; 
               />
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-medium uppercase text-muted-foreground">Image URL</label>
-              <input
-                type="url"
-                required
-                value={form.image}
-                onChange={(e) => setForm({ ...form, image: e.target.value })}
-                className="w-full px-3 py-2 border rounded-sm focus:outline-none focus:ring-1 focus:ring-accent bg-white text-foreground"
-                placeholder="https://images.unsplash.com/..."
-              />
-              {form.image && (
-                <div className="mt-2 w-24 h-28 rounded overflow-hidden border border-border">
-                  <img
-                    src={form.image}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = "none";
-                    }}
-                  />
-                </div>
-              )}
-            </div>
+            <ImageUploadField
+              label="Image URL"
+              value={form.image}
+              onChange={(url) => setForm({ ...form, image: url })}
+              aspect={4/5}
+              storagePath="categories"
+            />
 
             <div className="flex justify-end gap-2 pt-4">
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
@@ -790,6 +775,15 @@ function ProductsView({ products, categories, refetchProducts }: { products: any
 
             <div className="space-y-1">
               <label className="text-xs font-medium uppercase text-muted-foreground">Image URLs (comma or newline separated)</label>
+              <div className="mb-2">
+                <ImageUploadField
+                  label="Upload New Image & Append"
+                  value={""}
+                  onChange={(url) => setFormData({ ...formData, imageUrls: formData.imageUrls ? `${formData.imageUrls}\n${url}` : url })}
+                  aspect={1}
+                  storagePath="products"
+                />
+              </div>
               <textarea rows={3} value={formData.imageUrls} onChange={(e) => setFormData({ ...formData, imageUrls: e.target.value })} className="w-full px-3 py-2 border rounded-sm focus:outline-none focus:ring-1 focus:ring-accent bg-white text-foreground resize-none" placeholder="https://image1.jpg&#10;https://image2.jpg" />
               {formData.imageUrls && (
                 <div className="mt-2 flex gap-2 flex-wrap">
@@ -1101,9 +1095,14 @@ function WorldCollectionsView({ collections, refetch }: { collections: WorldColl
               <label className="block text-sm font-medium mb-1">Subtitle</label>
               <input className="w-full border rounded-lg px-3 py-2 text-sm" value={form.subtitle} onChange={(e) => setForm({ ...form, subtitle: e.target.value })} required />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Banner Image URL (Landscape)</label>
-              <input className="w-full border rounded-lg px-3 py-2 text-sm" value={form.bannerImage} onChange={(e) => setForm({ ...form, bannerImage: e.target.value })} placeholder="https://..." required />
+            <div className="mb-4">
+              <ImageUploadField
+                label="Banner Image URL (Landscape)"
+                value={form.bannerImage}
+                onChange={(url) => setForm({ ...form, bannerImage: url })}
+                aspect={21/9}
+                storagePath="world"
+              />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Link</label>
@@ -1261,9 +1260,14 @@ function BannersView({ banners, refetch }: { banners: HeroBanner[]; refetch: () 
               <label className="block text-sm font-medium mb-1">Subtitle</label>
               <input className="w-full border rounded-lg px-3 py-2 text-sm" value={form.subtitle} onChange={(e) => setForm({ ...form, subtitle: e.target.value })} required />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Image URL</label>
-              <input className="w-full border rounded-lg px-3 py-2 text-sm" value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} required placeholder="https://..." />
+            <div className="mb-4">
+              <ImageUploadField
+                label="Image URL"
+                value={form.image}
+                onChange={(url) => setForm({ ...form, image: url })}
+                aspect={21/9}
+                storagePath="banners"
+              />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>

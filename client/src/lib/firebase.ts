@@ -21,6 +21,7 @@ import {
   where,
   orderBy
 } from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { products as initialProducts } from "@/data/products";
 import { categories as initialCategories } from "@/data/categories";
 import type { Product, Category } from "@/types";
@@ -46,18 +47,21 @@ const isFirebaseConfigured =
 let app: any = null;
 let auth: any = null;
 let db: any = null;
+let storage: any = null;
 
 if (isFirebaseConfigured) {
   try {
     app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
     auth = getAuth(app);
     db = getFirestore(app);
+    storage = getStorage(app);
     console.log("Firebase initialized successfully with config.");
   } catch (error) {
     console.error("Failed to initialize actual Firebase, using mock fallback.", error);
     app = null;
     auth = null;
     db = null;
+    storage = null;
   }
 } else {
   console.log("Firebase credentials not configured in env. Running in local mock mode.");
@@ -799,50 +803,52 @@ export async function getFirebaseEnquiries(): Promise<Enquiry[]> {
       const list: Enquiry[] = [];
       snap.forEach((d) => list.push({ ...d.data(), id: d.id } as Enquiry));
       return list;
-    } catch (e) {
-      console.error("getFirebaseEnquiries failed, using local:", e);
+    } catch (error) {
+      console.error("Firestore getFirebaseEnquiries failed, using local fallback", error);
+      return getLocalEnquiries().sort((a, b) => b.createdAt - a.createdAt);
     }
   }
   return getLocalEnquiries().sort((a, b) => b.createdAt - a.createdAt);
 }
 
-export async function addFirebaseEnquiry(item: Omit<Enquiry, "id" | "createdAt" | "status">): Promise<Enquiry> {
-  const newEnquiry: Enquiry = {
-    ...item,
-    createdAt: Date.now(),
-    status: "new",
-  };
-  
+export async function addFirebaseEnquiry(enquiry: Omit<Enquiry, "id">): Promise<Enquiry> {
+  const newEnq = { ...enquiry, id: String(Date.now()) } as Enquiry;
   if (db) {
     try {
-      const docRef = await addDoc(collection(db, "enquiries"), newEnquiry);
-      return { ...newEnquiry, id: docRef.id };
+      const docRef = await addDoc(collection(db, "enquiries"), newEnq);
+      return { ...newEnq, id: docRef.id };
     } catch (e) {
-      console.error("addFirebaseEnquiry failed:", e);
+      console.error("Firestore addFirebaseEnquiry failed", e);
     }
   }
-  const final = { ...newEnquiry, id: String(Date.now()) };
-  const list = getLocalEnquiries();
-  list.push(final);
-  saveLocalEnquiries(list);
-  return final;
+  const list = getLocalEnquiries(); list.push(newEnq); saveLocalEnquiries(list); return newEnq;
 }
 
-export async function updateFirebaseEnquiryStatus(id: string, status: Enquiry["status"]): Promise<void> {
+export async function updateFirebaseEnquiryStatus(id: string, status: "new" | "contacted" | "resolved"): Promise<void> {
   if (db) {
+    try { await updateDoc(doc(db, "enquiries", id), { status }); return; }
+    catch (e) { console.error("Firestore updateFirebaseEnquiryStatus failed", e); }
+  }
+  const list = getLocalEnquiries(); const idx = list.findIndex(e => e.id === id);
+  if (idx !== -1) { list[idx].status = status; saveLocalEnquiries(list); }
+}
+
+// ==========================================
+// 8. STORAGE SERVICES
+// ==========================================
+export async function uploadFirebaseImage(file: File | Blob, path: string): Promise<string> {
+  if (storage) {
     try {
-      await updateDoc(doc(db, "enquiries", id), { status });
-      return;
-    } catch (e) {
-      console.error("updateFirebaseEnquiryStatus failed:", e);
+      const storageRef = ref(storage, path);
+      await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(storageRef);
+      return downloadURL;
+    } catch (error) {
+      console.error("Firebase Storage upload failed", error);
+      throw error;
     }
   }
-  const list = getLocalEnquiries();
-  const idx = list.findIndex(e => e.id === id);
-  if (idx !== -1) {
-    list[idx].status = status;
-    saveLocalEnquiries(list);
-  }
+  throw new Error("Firebase Storage is not configured. Cannot upload images.");
 }
 
 export async function deleteFirebaseEnquiry(id: string): Promise<void> {
