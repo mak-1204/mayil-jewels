@@ -14,6 +14,7 @@ import Login from "@/pages/Login";
 import ForgotPassword from "@/pages/ForgotPassword";
 import AdminDashboard from "@/pages/AdminDashboard";
 import { Route, Switch } from "wouter";
+import { Analytics } from '@vercel/analytics/react';
 
 function Router() {
   return (
@@ -41,6 +42,7 @@ export default function App() {
       <TooltipProvider>
         <Toaster position="top-center" richColors />
         <Router />
+        <Analytics />
       </TooltipProvider>
     </ThemeProvider>
   );
